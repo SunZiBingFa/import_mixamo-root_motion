@@ -440,9 +440,10 @@ class IMPORT_PT_base_settings(Panel):
         
         column = layout.column(align=True)
         column.prop(operator, 'is_apply_transforms', icon='CON_TRANSFORM')
-        column.prop(operator, 'is_add_root', icon='BONE_DATA')
+        column.prop(operator, 'is_add_root', icon='GROUP_BONE')
+        column.prop(operator, 'is_remove_prefix', icon='BONE_DATA')
         column.prop(operator, 'is_rename_animation', icon='ACTION')
-        column.prop(operator, 'is_remove_prefix', icon='TRASH')
+        column.prop(operator, 'is_remove_armature', icon='TRASH')
 
 
 class IMPORT_PT_bake_settings(Panel):
