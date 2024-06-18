@@ -1,4 +1,4 @@
-# import_mixamo-root_motion
+# import mixamo - root motion
 这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可以创建一个根骨骼记录位移信息。
 batch import mixamo.com fbx, root_motion, blender add-ons.
 
@@ -11,6 +11,6 @@ batch import mixamo.com fbx, root_motion, blender add-ons.
 ![001](./description/001.png)
 ![002](./description/002.png)
 ![003](./description/003.png)
+![gif](./description/anim.gif)
 
-<video src="./description/anim.mp4"  width='2530' height='1656' controls>
-</video>
+搞掂！🍺🍺🍺
