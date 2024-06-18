@@ -339,6 +339,7 @@ class BatchImport(Operator, ImportHelper):
     """ Batch import """
     bl_idname = "import_mixamo.root_motion"
     bl_label = "Import Mixamo *.Fbx"
+    bl_options = {'PRESET'}
 
     # ImportHelper mix-in class uses this.
     filename_ext = ""
@@ -367,8 +368,8 @@ class BatchImport(Operator, ImportHelper):
     )
     
     is_rename_animation: BoolProperty(
-        name="Rename anim with file name",
-        description="Rename action animation",
+        name="Rename action animation",
+        description="Rename animation with file name",
         default=True,
     )
     
@@ -386,7 +387,7 @@ class BatchImport(Operator, ImportHelper):
     
     bake_method: EnumProperty(
         name="Method",
-        description="Bake root keyframes",
+        description="Bake root motion keyframes",
         items=(
             ('COPY', "Copy", "Copy hips2Root"),
             ('CENTER', "Center", "Calculated bound box center"),
@@ -437,18 +438,20 @@ class IMPORT_PT_base_settings(Panel):
         sfile = context.space_data
         operator = sfile.active_operator
         
-        layout.prop(operator, 'is_apply_transforms')
-        layout.prop(operator, 'is_add_root')
-        layout.prop(operator, 'is_rename_animation')
-        layout.prop(operator, 'is_remove_prefix')
+        column = layout.column(align=True)
+        column.prop(operator, 'is_apply_transforms', icon='CON_TRANSFORM')
+        column.prop(operator, 'is_add_root', icon='BONE_DATA')
+        column.prop(operator, 'is_rename_animation', icon='ACTION')
+        column.prop(operator, 'is_remove_prefix', icon='TRASH')
 
 
 class IMPORT_PT_bake_settings(Panel):
     bl_space_type = 'FILE_BROWSER'
     bl_region_type = 'TOOL_PROPS'
-    bl_label = "Bake Settings"
+    bl_label = "Root Motion"
     bl_parent_id = "IMPORT_PT_base_settings"
     bl_options = {'HEADER_LAYOUT_EXPAND'}
+    
 
     @classmethod
     def poll(cls, context):
