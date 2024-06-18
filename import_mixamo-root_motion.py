@@ -265,6 +265,7 @@ def bake_root_keyframe(root_bone_name='Root', bake_x=True, bake_y=True, bake_z=T
 def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, bake_method, 
                         bake_x, bake_y, bake_z, is_rename_animation, is_remove_prefix, is_remove_armature):
     """Batch imort fbx (mixamo)"""
+
     
     try:
         ## variable
@@ -353,7 +354,6 @@ class BatchImport(Operator, ImportHelper):
 
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
-    
     is_apply_transforms: BoolProperty(
         name="Apply transforms",
         description="Apply transforms and fit it",
@@ -385,7 +385,7 @@ class BatchImport(Operator, ImportHelper):
     )
     
     bake_method: EnumProperty(
-        name="Bake Method",
+        name="Method",
         description="Bake root keyframes",
         items=(
             ('COPY', "Copy", "Copy hips2Root"),
@@ -415,22 +415,79 @@ class BatchImport(Operator, ImportHelper):
     def execute(self, context):
         return batch_import_mixamo(context, self.filepath, self.is_add_root, self.is_apply_transforms, self.bake_method, self.bake_x, self.bake_y, self.bake_z,
             self.is_rename_animation, self.is_remove_prefix, self.is_remove_armature)
+    
+    def draw(self, context):
+        pass
 
+
+class IMPORT_PT_base_settings(Panel):
+    bl_space_type = 'FILE_BROWSER'
+    bl_region_type = 'TOOL_PROPS'
+    bl_label = "Import Settings"
+
+    @classmethod
+    def poll(cls, context):
+        sfile = context.space_data
+        operator = sfile.active_operator
+        return operator.bl_idname == "IMPORT_MIXAMO_OT_root_motion"
+
+    def draw(self, context):
+        layout = self.layout
+
+        sfile = context.space_data
+        operator = sfile.active_operator
+        
+        layout.prop(operator, 'is_apply_transforms')
+        layout.prop(operator, 'is_add_root')
+        layout.prop(operator, 'is_rename_animation')
+        layout.prop(operator, 'is_remove_prefix')
+
+
+class IMPORT_PT_bake_settings(Panel):
+    bl_space_type = 'FILE_BROWSER'
+    bl_region_type = 'TOOL_PROPS'
+    bl_label = "Bake Settings"
+    bl_parent_id = "IMPORT_PT_base_settings"
+    bl_options = {'HEADER_LAYOUT_EXPAND'}
+
+    @classmethod
+    def poll(cls, context):
+        sfile = context.space_data
+        operator = sfile.active_operator
+        return operator.bl_idname == "IMPORT_MIXAMO_OT_root_motion"
+
+    def draw(self, context):
+        layout = self.layout
+        
+        sfile = context.space_data
+        operator = sfile.active_operator
+        
+        layout.prop(operator, 'bake_method')
+        
+        row = layout.row(align=True)
+        row.prop(operator, 'bake_x', icon='DECORATE')
+        row.prop(operator, 'bake_y', icon='DECORATE')
+        row.prop(operator, 'bake_z', icon='DECORATE')
 
 
 # Only needed if you want to add into a dynamic menu.
 def menu_func_import(self, context):
     self.layout.operator(BatchImport.bl_idname, text="Mixamo fbx(folder/*.fbx)")
+    
 
 
 # Register and add to the "file selector" menu (required to use F3 search "Text Import Operator" for quick access).
 def register():
     bpy.utils.register_class(BatchImport)
+    bpy.utils.register_class(IMPORT_PT_base_settings)
+    bpy.utils.register_class(IMPORT_PT_bake_settings)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 
 def unregister():
     bpy.utils.unregister_class(BatchImport)
+    bpy.utils.unregister_class(IMPORT_PT_bake_settings)
+    bpy.utils.unregister_class(IMPORT_PT_base_settings)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 
