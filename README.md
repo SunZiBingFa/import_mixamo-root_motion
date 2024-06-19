@@ -13,4 +13,5 @@ batch import mixamo.com fbx, root_motion, blender add-ons.
 ![003](./description/003.png)
 ![gif](./description/anim.gif)
 
-搞掂！🍺🍺🍺
+搞掂！  
+🍺🍺🍺

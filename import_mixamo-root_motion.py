@@ -13,6 +13,11 @@ bl_info = {
 import bpy
 import os
 
+from bpy_extras.io_utils import ImportHelper
+from bpy.props import StringProperty, BoolProperty, EnumProperty
+from bpy.types import Operator, Panel
+
+
 
 def rename_action_animation(file :str, old_action_prefix="Armature"):
     """rename action animation; return new name"""
@@ -265,8 +270,6 @@ def bake_root_keyframe(root_bone_name='Root', bake_x=True, bake_y=True, bake_z=T
 def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, bake_method, 
                         bake_x, bake_y, bake_z, is_rename_animation, is_remove_prefix, is_remove_armature):
     """Batch imort fbx (mixamo)"""
-
-    
     try:
         ## variable
         root_bone_name="Root"
@@ -328,13 +331,8 @@ def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, ba
     return {'FINISHED'}
 
 
-# ImportHelper is a helper class, defines filename and
-# invoke() function which calls the file selector.
-from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty
-from bpy.types import Operator, Panel
 
-
+## ImportHelper
 class BatchImport(Operator, ImportHelper):
     """ Batch import """
     bl_idname = "import_mixamo.root_motion"
@@ -349,67 +347,66 @@ class BatchImport(Operator, ImportHelper):
     filter_glob: StringProperty(
         default="",
         options={'HIDDEN'},
-        maxlen=255,  # Max internal buffer length, longer would be clamped.
+        maxlen=255,
     )
 
 
-    # List of operator properties, the attributes will be assigned
-    # to the class instance from the operator settings before calling.
+    # List of operator properties
     is_apply_transforms: BoolProperty(
         name="Apply transforms",
-        description="Apply transforms and fit it",
+        description="Apply all transforms and fix animation intensity",
         default=True,
     )
     
     is_add_root: BoolProperty(
-        name="Add root bone",
-        description="Add root bone for action anim",
+        name="Add Root Bone",
+        description="Add the root bone, Root Motion needs to use this bone to bake keyframes, if unchecked, Root Motion will not work.",
         default=True,
     )
     
     is_rename_animation: BoolProperty(
-        name="Rename action animation",
-        description="Rename animation with file name",
+        name="Rename Action",
+        description="Rename the name of the action animation using the filename",
         default=True,
     )
     
     is_remove_prefix: BoolProperty(
-        name="Remove prefix <mixamorig:>",
-        description="Remove all bone prefix <mixamorig:>",
+        name="Remove prefix",
+        description="Remove prefix names from all bones <mixamorig:>",
         default=True,
     )
     
     is_remove_armature: BoolProperty(
-        name="Remove Armature.00*",
+        name="Remove Armature",
         description="Remove object <Armature.00*>",
         default=True,
     )
     
     bake_method: EnumProperty(
         name="Method",
-        description="Bake root motion keyframes",
+        description="Baked root bone keyframing method",
         items=(
-            ('COPY', "Copy", "Copy hips2Root"),
-            ('CENTER', "Center", "Calculated bound box center"),
+            ('COPY', "Copy", "Copy the keyframes from the Hip bone to the Root bone."),
+            ('CENTER', "Center", "Calculate the center of gravity of the bounding box, and the lowest point"),
         ),
         default='COPY',
     )
     
     bake_x: BoolProperty(
         name="X",
-        description="Bake X Location",
+        description="Baking <X Location> to the Root Bone",
         default=True,
     )
     
     bake_y: BoolProperty(
         name="Y",
-        description="Bake Y Location",
+        description="Baking <Y Location> to the Root Bone",
         default=False,
     )
     
     bake_z: BoolProperty(
         name="Z",
-        description="Bake Z Location",
+        description="Baking <Z Location> to the Root Bone",
         default=True,
     )
     
@@ -420,7 +417,7 @@ class BatchImport(Operator, ImportHelper):
     def draw(self, context):
         pass
 
-
+## Panel: import setings
 class IMPORT_PT_base_settings(Panel):
     bl_space_type = 'FILE_BROWSER'
     bl_region_type = 'TOOL_PROPS'
@@ -445,7 +442,7 @@ class IMPORT_PT_base_settings(Panel):
         column.prop(operator, 'is_rename_animation', icon='ACTION')
         column.prop(operator, 'is_remove_armature', icon='TRASH')
 
-
+## Panel: root motion settings
 class IMPORT_PT_bake_settings(Panel):
     bl_space_type = 'FILE_BROWSER'
     bl_region_type = 'TOOL_PROPS'
@@ -474,7 +471,6 @@ class IMPORT_PT_bake_settings(Panel):
         row.prop(operator, 'bake_z', icon='DECORATE')
 
 
-# Only needed if you want to add into a dynamic menu.
 def menu_func_import(self, context):
     self.layout.operator(BatchImport.bl_idname, text="Mixamo fbx(folder/*.fbx)")
     
