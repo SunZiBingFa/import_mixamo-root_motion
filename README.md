@@ -2,6 +2,11 @@
 这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可以创建一个根骨骼记录位移信息。
 `blender` `add-ons` `batch import` `fbx` `mixamo.com ` `root motion` 
 
+## 😱😱😱 Fuckkkkkk
+我发现我看的 Root Motion 的教程是有点小问题的，骨骼动画对比原来的动画在高度轴上会有一点小小的偏差，就是这点偏差导致动画一旦循环就会出现卡一下的现象。
+
+造孽啊，又得修BUG了 🤯🤯🤯
+
 ## 功能：
 - 批量导入Fbx文件
 - 批量去除前缀名称 "mixamorig:"
@@ -25,5 +30,5 @@
 ![006](./img/006.gif)
 
 
-<font color=gray>搞掂！</font>
-<font color=gray>坐翻低、饮啖茶、吃个包 🍵🫖🍞 </font>
+<font color=gray>~~搞掂！~~</font>
+<font color=gray>~~坐翻低、饮啖茶、吃个包 🍵🫖🍞~~</font>
