@@ -1,13 +1,13 @@
 # import mixamo - root motion
-这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可以创建一个根骨骼记录位移信息。
+这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可创建一个根骨骼记录位移信息。
 `blender` `add-ons` `batch import` `fbx` `mixamo.com ` `root motion` 
 
-## 已知问题
-Root Motion 烘焙动画到根骨骼后，新的动画会和原来的动画有一点细小的误差，这种误差会导致循环出现卡顿现象。
+## Better Root Motion
+Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个坐标系下，再进行位移信息的烘焙，Hips 骨头会根据烘焙的轴向对动画进行修正。最终使得烘焙 Root Motion 后的动画与原动画（Mixamo.com）下载的一致。
+**⚠️ Root Motion 功能是会修改动画Hips骨头的关键帧(记录修正位移)**
 
-> 原因：骨骼动画使用（Local）局部空间坐标系，而且Hips骨骼初始y轴并不是与世界坐标z轴重合，有一定旋转角度，而动画中也包含有旋转的关键帧动画。所有当Hips骨骼的旋转角度越大，误差也就越大，使得动画循环出现问题。
-
-<font color="gray" size=2>正在尝试修复中...</font>
+> 骨骼的关键帧动画使用的是（Local）局部空间坐标系，默认创建的根骨骼y轴朝上，与（Global）世界坐标系Z轴重合。所以直接复制 Hips 骨骼的关键帧到根骨骼，并不是很好的解决方案。
+在 Hips 骨骼有旋转角度的时候，旋转角度与世界z轴夹角越大，和原动画的就误差越大。
 
 ## 功能：
 - 批量导入Fbx文件
@@ -16,7 +16,7 @@ Root Motion 烘焙动画到根骨骼后，新的动画会和原来的动画有�
 - 批量应用所有变换并修复动画强度
 - 批量移除多余的骨架和物体 "Armature.00*"
 - 创建根骨骼记录位移信息
-- Root Motion 提供了两种方式烘焙根位移动画到根骨骼
+- Root Motion 提供了两种方式烘焙根位移的高度轴到根骨骼
 
 ## 使用方法：
 1. 安装Blender 4.10或更高版本。
@@ -32,5 +32,5 @@ Root Motion 烘焙动画到根骨骼后，新的动画会和原来的动画有�
 ![006](./img/006.gif)
 
 
-<font color=gray>~~搞掂！~~</font>
-<font color=gray>~~坐翻低、饮啖茶、吃个包 🍵🫖🍞~~</font>
+<font color=gray>搞掂！</font>
+<font color=gray>坐翻低、饮啖茶、吃个包 🍵🫖🍞</font>
