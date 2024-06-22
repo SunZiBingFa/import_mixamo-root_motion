@@ -16,7 +16,7 @@ import os
 from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from bpy.types import Operator, Panel
-
+from mathutils import Vector
 
 
 def rename_action_animation(file :str, old_action_prefix="Armature"):
@@ -57,18 +57,24 @@ def scale_bone_anim_strength(strength=0.01):
 
 def add_root_bone(root_bone_name="Root"):
     """Add root bone, set the bone tail length, set the parent of hips to root"""
-    cur_obj = bpy.context.active_object
+    obj = bpy.context.active_object
     hips_bone_name="mixamorig:Hips"
     bpy.ops.object.mode_set(mode='EDIT', toggle=False)
     
     # create bone && set bone tail
-    root_bone = cur_obj.data.edit_bones.new(root_bone_name)
+    root_bone = obj.data.edit_bones.new(root_bone_name)
     root_bone.head = (0, 0, 0)
     root_bone.tail = (0, 0, 0.3)
     
-    ## set bone parent
-    cur_obj.data.edit_bones[hips_bone_name].parent = cur_obj.data.edit_bones[root_bone_name]
-    
+    bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+    return
+
+def set_bone_parent(child_bone_name="mixamorig:Hips", parent_bone_name="Root"):
+    """ set bone parent"""
+    obj = bpy.context.active_object
+    bpy.context.scene.frame_set(1)
+    bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+    obj.data.edit_bones[child_bone_name].parent = obj.data.edit_bones[parent_bone_name]
     bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
     return
 
@@ -88,185 +94,148 @@ def delete_armature(armature_name="Armature"):
         bpy.ops.object.delete()
     return
 
-
-## Method "COPY"
-def get_y_offset():
-    """ get endbone y_loc min_value"""
-    active_obj = bpy.context.active_object
-    
-    headtop = active_obj.pose.bones["mixamorig:HeadTop_End"].head
-    lefthand = active_obj.pose.bones["mixamorig:LeftHand"].head
-    righthand = active_obj.pose.bones["mixamorig:RightHand"].head
-    spline = active_obj.pose.bones["mixamorig:Spine"].head
-    lefttoe = active_obj.pose.bones["mixamorig:LeftToe_End"].head
-    righttoe = active_obj.pose.bones["mixamorig:RightToe_End"].head
-    
-    y_offset = min(headtop[2], lefthand[2], righthand[2], spline[2],lefttoe[2], righttoe[2])
-    return y_offset
-
-def copy_keyframe_hips2root(
-        root_bone_name="Root", bake_x=True, bake_y=False, bake_z=True):
-    """Copy the keyframes of the hips bone to the root bone"""
-    
-    ## variable
-    hips_bone_name="mixamorig:Hips"
+## Bake Keyframe - Root Motion
+    """ ... """
+def bone_loc_curve(bone_name="mixamorig:Hips"):
     action_name = bpy.context.active_object.animation_data.action.name
+    ## get Keyframes
+    for curve in bpy.data.actions[action_name].fcurves:
+        if curve.data_path == 'pose.bones["%s"].location' % (bone_name):
+            return curve
+
+
+def bone_releative_vec(abone_name="mixamorig:Hips", bbone_name="Root"):
+    """ abone releative moving vector ; root bone coordinate system"""
+    obj = bpy.context.active_object
+    abone = obj.pose.bones[abone_name]
+    bbone = obj.pose.bones[bbone_name]
     
-    ## root bone insert keyframe
-    root_bone = bpy.context.active_object.pose.bones[root_bone_name]
-    root_bone.keyframe_insert('location')
+    curve = bone_loc_curve(bone_name=abone_name)
+
+    ## keyframes.co.x , current frames
+    for kf in curve.keyframe_points:
+        subframe = float("0." + str(kf.co.x).split('.')[1])
+        bpy.context.scene.frame_set(int(kf.co.x), subframe=subframe)                           ## set current frame
+        if kf.co.x == 1.0:
+            orig_point = abone.matrix.translation @ bbone.matrix           ## original points
+            rel_vectors = [Vector((0, 0, 0))] 
+            abs_vectors = [orig_point]
+        else:
+            abs_vec = abone.matrix.translation @ bbone.matrix
+            releative_vec = abone.matrix.translation @ bbone.matrix - orig_point
+            rel_vectors.append(releative_vec)
+            abs_vectors.append(abs_vec)
     
-    ## variable -> y offset list
-    y_offset_ls = []
+    return rel_vectors, abs_vectors
+
+def method_bone_ylist() -> []:
+    """ get bone y_loc min_value (World Coordinate System)"""
+    obj = bpy.context.active_object
+    y_ls = []
+    curve = bone_loc_curve()
     
-    ## copy hips x/z location keyframe
-    fcurves = bpy.data.actions[action_name].fcurves
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["%s"].location' % (hips_bone_name):
-            if curve.array_index == 0 and bake_x:
-                x_loc_curve = curve
-            elif curve.array_index == 1 and bake_y:
-                y_loc_curve = curve
-                for kf in curve.keyframe_points:
-                    bpy.context.scene.frame_set(int(kf.co.x))
-                    y_offset = get_y_offset()
-                    y_offset_ls.append(y_offset)
-            elif curve.array_index == 2 and bake_z:
-                z_loc_curve = curve
-
-    ## set root bone loc keyframe
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["%s"].location' % (root_bone_name):
-            if curve.array_index == 0 and bake_x:
-                for kf in x_loc_curve.keyframe_points:
-                    bpy.context.scene.frame_set(int(kf.co.x))
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[int(kf.co.x)-1].co = kf.co
-
-            elif curve.array_index == 1 and bake_y:
-                for kf in y_loc_curve.keyframe_points:
-                    bpy.context.scene.frame_set(int(kf.co.x))
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[int(kf.co.x)-1].co.y = y_offset_ls[int(kf.co.x)-1]
-
-            elif curve.array_index == 2 and bake_z:
-                for kf in z_loc_curve.keyframe_points:
-                    bpy.context.scene.frame_set(int(kf.co.x))
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[int(kf.co.x)-1].co = kf.co
+    headtop = obj.pose.bones["mixamorig:HeadTop_End"]
+    lefthand = obj.pose.bones["mixamorig:LeftHand"]
+    righthand = obj.pose.bones["mixamorig:RightHand"]
+    spline = obj.pose.bones["mixamorig:Spine"]
+    lefttoe = obj.pose.bones["mixamorig:LeftToe_End"]
+    righttoe = obj.pose.bones["mixamorig:RightToe_End"]
     
-    # del hips x/z location keyframes
-    bpy.context.scene.frame_set(1)
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["%s"].location' % (hips_bone_name):
-            if curve.array_index == 0 and bake_x:
-                fcurves.remove(curve)
-            elif curve.array_index == 2 and bake_z:
-                fcurves.remove(curve)
+    for kf in curve.keyframe_points:
+        subframe = float("0." + str(kf.co.x).split('.')[1])
+        bpy.context.scene.frame_set(int(kf.co.x), subframe=subframe)
+        y_loc = min(headtop.head[2], 
+                    lefthand.head[2], 
+                    righthand.head[2], 
+                    spline.head[2],
+                    lefttoe.head[2], 
+                    righttoe.head[2])
+        y_ls.append(y_loc)
 
-    ## hips bone y locatioin sub y offset
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["%s"].location' % (hips_bone_name):
-            if curve.array_index == 1 and bake_y:
-                for kf in y_loc_curve.keyframe_points:
-                    kf.co.y -= y_offset_ls[int(kf.co.x)-1]
+    return y_ls
 
-    bpy.context.scene.frame_set(1)
-    return
-
-
-## Method: "CENTER"
-def get_bound_box_center():
-    """ get bound box center.x,y and bound_box lowest.z ; world orig"""
-    act_obj = bpy.context.active_object
-    armature_bound_box = [b[:] for b in act_obj.bound_box]
-    armature_center = [value / len(armature_bound_box) 
-        for value in list(map(sum, zip(*armature_bound_box)))]
-
-    x_value = armature_center[0]
-    y_value = armature_center[1]
+def get_bound_box_y() -> []:
+    """ get bound box lowest point y """
+    obj = bpy.context.active_object
+    armature_bound_box = [b[:] for b in obj.bound_box]
     
-    if not act_obj.children:
-        z_value = min(list(zip(*armature_bound_box))[2])
-    else:
+    if obj.children:
         child_bound_boxs = []
-        for child in act_obj.children:
+        for child in obj.children:
             if child.type == 'MESH':
                 child_bound_boxs += [c[:] for c in child.bound_box]
-        z_value = min(list(zip(*child_bound_boxs))[2])
-  
-    return x_value, y_value, z_value        ## Global x, y, z
+        value = min(list(zip(*child_bound_boxs))[2])
+    else:
+        value = min(list(zip(*armature_bound_box))[2])
+        
+    return value
 
+def method_bound_box_ylist() -> []:
+    curve = bone_loc_curve()
+    y_ls = []
+    for kf in curve.keyframe_points:
+        subframe = float("0." + str(kf.co.x).split('.')[1])
+        bpy.context.scene.frame_set(int(kf.co.x), subframe=subframe)
+        y_ls.append(get_bound_box_y())
+    return y_ls
 
-def record_center():
-    """ calculate center x,y,z; record """
-    action_name = bpy.context.active_object.animation_data.action.name
-    hips_bone = bpy.context.active_object.pose.bones["mixamorig:Hips"]
-    fcurves = bpy.data.actions[action_name].fcurves
-    x_ls, y_ls, z_ls = [], [], []
-    
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["mixamorig:Hips"].location' and curve.array_index == 0:
-            for kf in curve.keyframe_points:
-                bpy.context.scene.frame_set(int(kf.co.x))
-                gl_x, gl_y, gl_z = get_bound_box_center()
-                x, y, z = gl_x, gl_z, -gl_y            ## map Global Orientations to bone Local Orientations
-                x_ls.append(x)
-                y_ls.append(y)
-                z_ls.append(z)
-    
-    return x_ls, y_ls, z_ls
+def bone_keyframes_insert(bone_name="Root", curve=None, vectors=[]):
+    """ insert keyframes - root bone """
+    obj = bpy.context.active_object
+    bone = obj.pose.bones[bone_name]
 
-
-def bake_root_keyframe(root_bone_name='Root', bake_x=True, bake_y=True, bake_z=True,
-                            x_ls=[], y_ls=[], z_ls=[]):
-    """ aaaa """
-    action_name = bpy.context.active_object.animation_data.action.name
-    ## insert a keyframe -> active root bone fcurves
-    root_bone = bpy.context.active_object.pose.bones[root_bone_name]
-    bpy.context.scene.frame_set(1)
-    root_bone.keyframe_insert('location')
-    
-    ## apply x, y, z
-    fcurves = bpy.data.actions[action_name].fcurves
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["%s"].location' % (root_bone_name):
-            if curve.array_index == 0 and bake_x:
-                for i, v in enumerate(x_ls):
-                    bpy.context.scene.frame_set(i+1)
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[i].co.y = v
-                    
-            elif curve.array_index == 1 and bake_y:
-                for i, v in enumerate(y_ls):
-                    bpy.context.scene.frame_set(i+1)
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[i].co.y = v
-            
-            if curve.array_index == 2 and bake_z:
-                for i, v in enumerate(z_ls):
-                    bpy.context.scene.frame_set(i+1)
-                    root_bone.keyframe_insert('location')
-                    curve.keyframe_points[i].co.y = v
-
-
-#    ## hip loc keyframe sub offset value
-    for curve in fcurves:
-        if curve.data_path == 'pose.bones["mixamorig:Hips"].location':
-            if curve.array_index == 0 and bake_x:
-                for kf in curve.keyframe_points:
-                    kf.co.y -= x_ls[int(kf.co.x)-1]
-            if curve.array_index == 1 and bake_y:
-                for kf in curve.keyframe_points:
-                    kf.co.y -= y_ls[int(kf.co.x)-1]
-            if curve.array_index == 2 and bake_z:
-                for kf in curve.keyframe_points:
-                    kf.co.y -= z_ls[int(kf.co.x)-1]
-
-    bpy.context.scene.frame_set(1)
+    for i, kf in enumerate(curve.keyframe_points):        ## set root x y z keyframe points
+        bone.location = vectors[i]
+        bone.keyframe_insert(data_path='location', frame=kf.co.x)
     return
 
+def bone_keyframe_fix(hips_name="mixamorig:Hips", root_name="Root", vectors=[]):
+    """ bone keyframe offset to fix; hips bone local coordinate system """
+    obj = bpy.context.active_object
+    hips = obj.pose.bones[hips_name]
+    root = obj.pose.bones[root_name]
+    
+    vectors = [root.bone.matrix @ v for v in vectors] ## hips bone map to armature coordinate system
+    local_kf = [obj.matrix_world.inverted() @ hips.bone.matrix_local.inverted() @ v for v in vectors] ## hips bone map to local coordinate system
+    
+    ## set keyframes
+    action_name = bpy.context.active_object.animation_data.action.name
+    for curve in bpy.data.actions[action_name].fcurves:
+        if curve.data_path == 'pose.bones["%s"].location' % (hips_name):
+            if curve.array_index == 0:
+                for i, kf in enumerate(curve.keyframe_points):
+                    kf.co.y = local_kf[i][0]
+                    
+            elif curve.array_index == 1:
+                for i, kf in enumerate(curve.keyframe_points):
+                    kf.co.y = local_kf[i][1]
+                    
+            elif curve.array_index == 2:
+                for i, kf in enumerate(curve.keyframe_points):
+                    kf.co.y = local_kf[i][2]
 
+def get_bone_vectors(bake_x=True, bake_y=True, bake_z=True, y_ls=[]):
+    ## parm
+    rel_vectors, abs_vectors = bone_releative_vec()
+    
+    ## set root keyframes
+    root_vectors = [Vector((v.x * bake_x, y_ls[i] * bake_y, v.z * bake_z)) for i, v in enumerate(rel_vectors)] # root moving Vector * switch x y z
+    hips_vectors = [abs_vectors[i] - root_vectors[i] for i in range(len(root_vectors))]
+    
+    return root_vectors, hips_vectors
+
+
+def bake_root_motion(root_vectors, hips_vectors):
+    """ bake_root_motion main func """
+    ## Record Parm
+    hips_curve = bone_loc_curve()
+
+    ## set keyframe
+    bone_keyframes_insert(bone_name="Root", curve=hips_curve, vectors=root_vectors)     ## set root bone keyframe
+    bone_keyframe_fix(hips_name="mixamorig:Hips", root_name="Root", vectors=hips_vectors)       ## fix hips bone keyframe
+
+
+## main <---
 def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, bake_method, 
                         bake_x, bake_y, bake_z, is_rename_animation, is_remove_prefix, is_remove_armature):
     """Batch imort fbx (mixamo)"""
@@ -275,6 +244,7 @@ def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, ba
         root_bone_name="Root"
         prefix="mixamorig:"
         armature_name="Armature"
+        bake_y, bake_z = bake_z, bake_y  ## for user Z as height
         
         if not os.path.isdir(directory):
             directory = os.path.dirname(directory)
@@ -294,28 +264,28 @@ def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, ba
             if is_apply_transforms:
                 ## Record active object X Scale
                 active_obj_scale = bpy.context.active_object.scale[0]
-                
                 ## Apply Object All Transform
                 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
                 ## Scale Action Strength
                 scale_bone_anim_strength(strength=active_obj_scale)
 
-            ## Record
-            x_ls, y_ls, z_ls = record_center()
+            if is_add_root and (bake_x or bake_y or bake_z):
+                match bake_method:
+                    case "BONE":
+                        y_ls = method_bone_ylist()
+                    case "BOUND_BOX":
+                        y_ls = method_bound_box_ylist()
             
             ## Add Root Bone
             if is_add_root:
                 add_root_bone(root_bone_name=root_bone_name)
             
-            ## Copy Hips Bone location x/y/z keframe to Root Bone
             if is_add_root and (bake_x or bake_y or bake_z):
-                match bake_method:
-                    case "COPY":
-                        copy_keyframe_hips2root(root_bone_name=root_bone_name, bake_x=bake_x, bake_y=bake_y, bake_z=bake_z)
-                    case "CENTER":
-                        bake_root_keyframe(root_bone_name=root_bone_name,bake_x=bake_x, bake_y=bake_y, bake_z=bake_z,
-                            x_ls=x_ls, y_ls=y_ls, z_ls=z_ls)
+                root_vectors, hips_vectors = get_bone_vectors(bake_x=bake_x, bake_y=bake_y, bake_z=bake_z, y_ls=y_ls)
+                bake_root_motion(root_vectors, hips_vectors)
+            
+            if is_add_root:
+                set_bone_parent()
 
             ## remove prefix "mixamorig"
             if is_remove_prefix:
@@ -354,7 +324,7 @@ class BatchImport(Operator, ImportHelper):
     # List of operator properties
     is_apply_transforms: BoolProperty(
         name="Apply transforms",
-        description="Apply all transforms and fix animation intensity",
+        description="Recommended to keep it checked, apply all transforms and fix animation intensity",
         default=True,
     )
     
@@ -384,12 +354,12 @@ class BatchImport(Operator, ImportHelper):
     
     bake_method: EnumProperty(
         name="Method",
-        description="Baked root bone keyframing method",
+        description="Root-Motion -> Bake keyframes: Height calculation method",
         items=(
-            ('COPY', "Copy", "Copy the keyframes from the Hip bone to the Root bone."),
-            ('CENTER', "Center", "Calculate the center of gravity of the bounding box, and the lowest point"),
+            ('BONE', "Bone", "Armature -> lowest Bone"),
+            ('BOUND_BOX', "Bound box", "Armature -> Bound Box -> lowset height"),
         ),
-        default='COPY',
+        default='BONE',
     )
     
     bake_x: BoolProperty(
@@ -401,13 +371,13 @@ class BatchImport(Operator, ImportHelper):
     bake_y: BoolProperty(
         name="Y",
         description="Baking <Y Location> to the Root Bone",
-        default=False,
+        default=True,
     )
     
     bake_z: BoolProperty(
         name="Z",
-        description="Baking <Z Location> to the Root Bone",
-        default=True,
+        description="Baking <Z Location> to the Root Bone - Height",
+        default=False,
     )
     
     def execute(self, context):
@@ -466,16 +436,14 @@ class IMPORT_PT_bake_settings(Panel):
         layout.prop(operator, 'bake_method')
         
         row = layout.row(align=True)
-        row.prop(operator, 'bake_x', icon='DECORATE')
-        row.prop(operator, 'bake_y', icon='DECORATE')
-        row.prop(operator, 'bake_z', icon='DECORATE')
+        row.prop(operator, 'bake_x', icon='KEYFRAME_HLT')
+        row.prop(operator, 'bake_y', icon='KEYFRAME_HLT')
+        row.prop(operator, 'bake_z', icon='KEYFRAME_HLT')
 
 
 def menu_func_import(self, context):
     self.layout.operator(BatchImport.bl_idname, text="Mixamo fbx(folder/*.fbx)")
     
-
-
 # Register and add to the "file selector" menu (required to use F3 search "Text Import Operator" for quick access).
 def register():
     bpy.utils.register_class(BatchImport)
