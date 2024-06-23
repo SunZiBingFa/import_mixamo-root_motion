@@ -219,7 +219,11 @@ def get_bone_vectors(bake_x=True, bake_y=True, bake_z=True, y_ls=[]):
     rel_vectors, abs_vectors = bone_releative_vec()
     
     ## set root keyframes
-    root_vectors = [Vector((v.x * bake_x, y_ls[i] * bake_y, v.z * bake_z)) for i, v in enumerate(rel_vectors)] # root moving Vector * switch x y z
+    if y_ls: ## Others Method
+        root_vectors = [Vector((v.x * bake_x, y_ls[i] * bake_y, v.z * bake_z)) for i, v in enumerate(rel_vectors)] # root moving Vector * switch x y z
+    else:  ## COPY Method
+        root_vectors = [Vector((v.x * bake_x, v.y * bake_y, v.z * bake_z)) for i, v in enumerate(rel_vectors)] # root moving Vector * switch x y z
+    
     hips_vectors = [abs_vectors[i] - root_vectors[i] for i in range(len(root_vectors))]
     
     return root_vectors, hips_vectors
@@ -271,10 +275,13 @@ def batch_import_mixamo(context, directory, is_add_root, is_apply_transforms, ba
 
             if is_add_root and (bake_x or bake_y or bake_z):
                 match bake_method:
+                    case "COPY":
+                        y_ls = []
                     case "BONE":
                         y_ls = method_bone_ylist()
                     case "BOUND_BOX":
                         y_ls = method_bound_box_ylist()
+
             
             ## Add Root Bone
             if is_add_root:
@@ -354,12 +361,13 @@ class BatchImport(Operator, ImportHelper):
     
     bake_method: EnumProperty(
         name="Method",
-        description="Root-Motion -> Bake keyframes: Height calculation method",
+        description="Root-Motion -> Bake keyframes: Height bake method",
         items=(
+            ('COPY', "Copy", "Copy from hips bone delta_height animation"),
             ('BONE', "Bone", "Armature -> lowest Bone"),
             ('BOUND_BOX', "Bound box", "Armature -> Bound Box -> lowset height"),
         ),
-        default='BONE',
+        default='COPY',
     )
     
     bake_x: BoolProperty(
