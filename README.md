@@ -27,9 +27,10 @@ Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个
 ![001](./img/001.png)
 ![002](./img/002.png)
 ![003](./img/003.png)
-![004](./img/004.gif)
+![004](./img/004.png)
 ![005](./img/005.gif)
 ![006](./img/006.gif)
+![007](./img/007.gif)
 
 
 <font color=gray>搞掂！</font>
