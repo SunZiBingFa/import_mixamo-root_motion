@@ -3,7 +3,7 @@
 `blender` `add-ons` `batch import` `fbx` `mixamo.com ` `root motion` 
 
 ## Better Root Motion
-Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个坐标系下，再进行位移信息的烘焙，Hips 骨头会根据烘焙的轴向对动画进行修正。最终使得烘焙 Root Motion 后的动画与原动画（Mixamo.com）下载的一致。
+Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个坐标系下，再进行位移信息的烘焙，Hips 骨头会根据烘焙的轴向对动画进行修正。最终使得烘焙 Root Motion 后的动画与原动画（Mixamo.com）下载的一致。 <br>
 **⚠️ Root Motion 功能是会修改动画Hips骨头的关键帧(记录修正位移)**
 
 > 骨骼的关键帧动画使用的是（Local）局部空间坐标系，默认创建的根骨骼y轴朝上，与（Global）世界坐标系Z轴重合。所以直接复制 Hips 骨骼的关键帧到根骨骼，并不是很好的解决方案。
