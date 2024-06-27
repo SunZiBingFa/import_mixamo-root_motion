@@ -1,13 +1,21 @@
 # import mixamo - root motion
-这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可创建一个根骨骼记录位移信息。
+这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可创建一个根骨骼记录位移信息。<br>
 `blender` `add-ons` `batch import` `fbx` `mixamo.com ` `root motion` 
 
-## Better Root Motion
-Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个坐标系下，再进行位移信息的烘焙，Hips 骨头会根据烘焙的轴向对动画进行修正。最终使得烘焙 Root Motion 后的动画与原动画（Mixamo.com）下载的一致。 <br>
-**⚠️ Root Motion 功能是会修改动画Hips骨头的关键帧(记录修正位移)**
+## Root Motion
+Root Motion 将角色移动烘焙到`Root`骨骼并将它作为父级，烘焙后的动画会与原动画（Mixamo.com下载的）保持一致。 <br>
+**⚠️ Root Motion 功能是会修改动画Hips骨头的关键帧(用来记录修正位移)**
 
-> 骨骼的关键帧动画使用的是（Local）局部空间坐标系，默认创建的根骨骼y轴朝上，与（Global）世界坐标系Z轴重合。所以直接复制 Hips 骨骼的关键帧到根骨骼，并不是很好的解决方案。
-在 Hips 骨骼有旋转角度的时候，旋转角度与世界z轴夹角越大，和原动画的就误差越大。
+<details>
+<summary> 为什么需要修正动画</summary>
+· 骨骼的关键帧动画使用的是 <font color='LightSeaGreen'>Local</font> 局部空间坐标系。<br>
+·  <font color='SeaGreen'> mixamo.com </font> 的动画记录位移信息的是Hips骨骼，可能有一定旋转角度。<br>
+· 而创建的Root骨骼自身Y轴与世界Z轴重合。<br>
+· 当两个骨骼局部空间坐标系不重合时，夹角越大误差越大。<br>
+· 这里把骨骼都转化为 <font color='LightSeaGreen'>Global</font> 全局空间坐标系，再进行根骨骼动画的计算，最后转化为各个骨骼的 <font color='LightSeaGreen'>Local</font> 局部空间坐标系进行关键帧烘焙。<br>
+· 当没有对X/Y/Z三个轴都烘焙时，需要对动画进行修正。
+
+</details>
 
 ## 功能
 - 批量导入Fbx文件
@@ -19,11 +27,12 @@ Root Motion将会对坐标系进行映射，使 Hips 和 Root 骨骼在同一个
 - Root Motion 提供了两种方式烘焙根位移的高度轴到根骨骼
 
 ## 使用方法
-1. 安装Blender 4.10或更高版本。
+1. 安装Blender 4.1.0 或更高版本。
 2. 下载并安装该插件。
 3. 打开Blender，选择“文件”>“导入”>“Mixamo Fbx(floder/*.fbx)”。
 4. 在打开的对话框中，选择动画文件的文件夹，右侧面板进行设置，点击导入“Import Mixamo *.Fbx”。
 
+## 演示说明
 ![001](./img/001.png)
 ![002](./img/002.png)
 ![003](./img/003.png)
