@@ -19,7 +19,7 @@ from bpy.types import Operator, Panel
 from mathutils import Vector
 
 
-def rename_action_animation(file :str, old_action_prefix="Armature"):
+def rename_action_animation(file :str):
     """rename action animation; return new name"""
     bpy.context.active_object.animation_data.action.name = os.path.splitext(file)[0]
     return
@@ -469,7 +469,6 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-
     # test call
     bpy.ops.import_mixamo.root_motion('INVOKE_DEFAULT')
 #    unregister()
