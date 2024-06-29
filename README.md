@@ -1,9 +1,18 @@
 # import mixamo - root motion
-这是一个blender插件，用来批量导入Mixamo.com下载的fbx文件，并可创建一个根骨骼记录位移信息。<br>
-`blender` `add-ons` `batch import` `fbx` `mixamo.com ` `root motion` 
+这是一个blender插件，用来批量导入从 Mixamo.com 下载的fbx动画文件。<br>创建根骨骼烘焙 Root Motion （根位移）。 <br>
+
+## 功能
+- 批量导入Fbx文件
+- 批量去除前缀名称 "mixamorig:"
+- 批量重命名动画名称，以文件名命名
+- 批量应用所有变换并修复动画强度
+- 批量移除多余的骨架和物体 "Armature.00*"
+- 批量创建根骨骼，用以记录Root Motion信息
+- Root Motion 提供了几种计算方式烘焙关键帧
+
 
 ## Root Motion
-Root Motion 将角色移动烘焙到`Root`骨骼并将它作为父级，烘焙后的动画会与原动画（Mixamo.com下载的）保持一致。 <br>
+Root Motion 将角色位移烘焙到`Root`骨骼并将它作为父级，烘焙后的动画会与原动画（Mixamo.com下载的）保持一致。 <br>
 **⚠️ Root Motion 功能是会修改动画Hips骨头的关键帧(用来记录修正位移)**
 
 <details>
@@ -17,14 +26,6 @@ Root Motion 将角色移动烘焙到`Root`骨骼并将它作为父级，烘焙�
 
 </details>
 
-## 功能
-- 批量导入Fbx文件
-- 批量去除前缀名称 "mixamorig:"
-- 批量重命名动画名称，以文件名命名
-- 批量应用所有变换并修复动画强度
-- 批量移除多余的骨架和物体 "Armature.00*"
-- 创建根骨骼记录位移信息
-- Root Motion 提供了两种方式烘焙根位移的高度轴到根骨骼
 
 ## 使用方法
 1. 安装Blender 4.1.0 或更高版本。
