@@ -244,9 +244,6 @@ def import_mixamo_root_motion(context, file_path: str, is_apply_transform: bool,
     hips_name = "mixamorig:Hips"
     prefix_name = "mixamorig:"
     armature_name = "Armature"
-    # get file_path for ImportHelper
-    print(file_path)
-    # ## batch, loop...
     try:
         bpy.ops.import_scene.fbx(filepath=file_path)  ## import fbx file
 

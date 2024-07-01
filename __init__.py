@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Mixamo Fbx",
+    "name": "Mixamo Fbx · Root Motion",
     "author": "SunZiBingFa@github.com",
     "version": (1, 0),
     "blender": (4, 1, 0),
@@ -7,7 +7,7 @@ bl_info = {
     "description": "Batch Import Fbx (Mixamo) And Rename From File Name",
     "warning": "",
     "doc_url": "",
-    "category": "Batch Import",
+    "category": "Import-Export",
 }
 
 
