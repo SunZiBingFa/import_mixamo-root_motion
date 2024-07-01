@@ -219,7 +219,7 @@ class RootMotion():
         local_vectors = self.vectors_world2local(bone_name, vectors)
         for i, f in enumerate(self.frames):
             bone.location = local_vectors[i]
-            bone.keyframe_insert(data_path='location', frame=f)
+            bone.keyframe_insert(data_path='location', frame=f, group=bone_name)
         return {'FINISHED'}
 
     def edit_keyframes(self, bone_name, vectors):
