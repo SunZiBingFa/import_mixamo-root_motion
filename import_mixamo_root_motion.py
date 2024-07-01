@@ -2,7 +2,7 @@ import bpy
 import os
 
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, BoolProperty, EnumProperty, CollectionProperty
 from bpy.types import Operator, Panel
 from mathutils import Vector
 
@@ -234,7 +234,7 @@ class RootMotion():
         return {'FINISHED'}
 
 
-def import_mixamo_root_motion(context, dir_path: str, is_apply_transform: bool, 
+def import_mixamo_root_motion(context, file_path: str, is_apply_transform: bool, 
                               is_rename_action: bool, is_remove_prefix: bool, 
                               is_delete_armature: bool, is_add_root: bool,
                               method: str, bake_x: bool, bake_y: bool, bake_z: bool):
@@ -245,49 +245,44 @@ def import_mixamo_root_motion(context, dir_path: str, is_apply_transform: bool,
     prefix_name = "mixamorig:"
     armature_name = "Armature"
     # get file_path for ImportHelper
-    if not os.path.isdir(dir_path):
-        dir_path = os.path.dirname(dir_path)        ## Only Get dir_path
-    files_name = [f for f in os.listdir(dir_path)
-                  if os.path.splitext(f)[-1][1:].lower() == 'fbx'] ## Record the fbx file name and filter out the fbx file
-    ## batch, loop...
+    print(file_path)
+    # ## batch, loop...
     try:
-        for file in files_name:
-            file_path = os.path.join(dir_path, file)
-            bpy.ops.import_scene.fbx(filepath=file_path)  ## import fbx file
+        bpy.ops.import_scene.fbx(filepath=file_path)  ## import fbx file
 
-            ## class instance
-            importer = ImportMixamo(hips_name=hips_name)
-            bake_method = BakeMethod(hips_name=hips_name, method=method,
-                                    bake_x=bake_x, bake_y=bake_y, bake_z=bake_z)
-            root_motion = RootMotion(hips_name=hips_name)
+        ## class instance
+        importer = ImportMixamo(hips_name=hips_name)
+        bake_method = BakeMethod(hips_name=hips_name, method=method,
+                                bake_x=bake_x, bake_y=bake_y, bake_z=bake_z)
+        root_motion = RootMotion(hips_name=hips_name)
 
-            ## apply transform and fix animation
-            if is_apply_transform:
-                importer.scale_bone_action_intensity()
-                importer.apply_all_transform()
-            ## get vectors for bone
-            if is_add_root and (bake_x, bake_y, bake_z):
-                root_vectors, hips_vectors = bake_method.run()
-            ## add root bone
-            if is_add_root:
-                root_motion.add_root(root_name=root_name)
-            # ## bake root motion keyframes
-            if is_add_root and (bake_x, bake_y, bake_z):
-                root_motion.bake_keyframes(bone_name=root_name, vectors=root_vectors)
-                root_motion.edit_keyframes(bone_name=hips_name, vectors=hips_vectors)
-            # ## set parent
-            if is_add_root:
-                importer.set_parent(child_bone_name=hips_name, parent_bone_name=root_name)
-            # ## rename action
-            if is_rename_action:
-                importer.rename_action(file_path=file_path)
-            # ## remove prefix
-            if is_remove_prefix:
-                importer.remove_prefix_name(prefix_name=prefix_name)
-            # ## delete armature
-            if is_delete_armature:
-                importer.delete_armature(armature_name=armature_name)
-            context.scene.frame_set(1)  ## set frame to 1
+        ## apply transform and fix animation
+        if is_apply_transform:
+            importer.scale_bone_action_intensity()
+            importer.apply_all_transform()
+        ## get vectors for bone
+        if is_add_root and (bake_x, bake_y, bake_z):
+            root_vectors, hips_vectors = bake_method.run()
+        ## add root bone
+        if is_add_root:
+            root_motion.add_root(root_name=root_name)
+        # ## bake root motion keyframes
+        if is_add_root and (bake_x, bake_y, bake_z):
+            root_motion.bake_keyframes(bone_name=root_name, vectors=root_vectors)
+            root_motion.edit_keyframes(bone_name=hips_name, vectors=hips_vectors)
+        # ## set parent
+        if is_add_root:
+            importer.set_parent(child_bone_name=hips_name, parent_bone_name=root_name)
+        # ## rename action
+        if is_rename_action:
+            importer.rename_action(file_path=file_path)
+        # ## remove prefix
+        if is_remove_prefix:
+            importer.remove_prefix_name(prefix_name=prefix_name)
+        # ## delete armature
+        if is_delete_armature:
+            importer.delete_armature(armature_name=armature_name)
+        context.scene.frame_set(1)  ## set frame to 1
     except Exception as e:
         print(e)
     return {'FINISHED'}
@@ -301,12 +296,19 @@ class BatchImport(Operator, ImportHelper):
     bl_options = {'PRESET'}
 
     # ImportHelper mix-in class uses this.
-    filename_ext = ""
+    filename_ext = ".fbx"
     
-    directory: StringProperty(subtype='DIR_PATH') # type: ignore
+    files: CollectionProperty(
+        type=bpy.types.OperatorFileListElement,
+        options={'HIDDEN', 'SKIP_SAVE'},
+    ) # type: ignore
+
+    directory: StringProperty(
+        subtype='DIR_PATH'
+    ) # type: ignore
     
     filter_glob: StringProperty(
-        default="",
+        default="*.fbx",
         options={'HIDDEN'},
         maxlen=255,
     ) # type: ignore
@@ -372,7 +374,9 @@ class BatchImport(Operator, ImportHelper):
     ) # type: ignore
     
     def execute(self, context):
-        return import_mixamo_root_motion(context, dir_path=self.directory, 
+        for file in self.files:
+            file_path = os.path.join(self.directory, file.name)
+            import_mixamo_root_motion(context, file_path=file_path, 
                                         is_apply_transform=self.is_apply_transforms, 
                                         is_rename_action=self.is_rename_action, 
                                         is_remove_prefix=self.is_remove_prefix, 
@@ -380,6 +384,7 @@ class BatchImport(Operator, ImportHelper):
                                         is_add_root=self.is_add_root,
                                         method=self.method, bake_x=self.bake_x, 
                                         bake_y=self.bake_y, bake_z=self.bake_z)
+        return {'FINISHED'}
     
     def draw(self, context):
         pass
