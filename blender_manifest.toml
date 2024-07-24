@@ -2,7 +2,7 @@ schema_version = "1.0.0"
 
 # Example of manifest file for a Blender extension
 # Change the values according to your extension
-id = "import_mixamo.root_motion"
+id = "import_mixamo_root_motion"
 version = "1.0.0"
 name = "Import Mixamo - Root Motion"
 tagline = "Batch Import Fbx (Mixamo) And Rename From File Name"
