@@ -15,7 +15,7 @@ website = "https://github.com/SunZiBingFa/import_mixamo-root_motion"
 
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
-tags = ["Import", "Root_Motion"]
+tags = ["Import-Export"]
 
 blender_version_min = "4.1.0"
 # # Optional: Blender version that the extension does not support, earlier versions are supported.
