@@ -59,7 +59,7 @@ license = [
 #
 # [permissions]
 # network = ""
-# files = "Import FBX from disk and apply root motion"
+files = "Import FBX from disk"
 # clipboard = ""
 
 # Optional: build settings.
