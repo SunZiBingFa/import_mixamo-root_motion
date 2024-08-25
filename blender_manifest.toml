@@ -57,7 +57,7 @@ license = [
 # # Keep this a single short sentence without a period (.) at the end.
 # # For longer explanations use the documentation or detail page.
 #
-# [permissions]
+[permissions]
 # network = ""
 files = "Import FBX from disk"
 # clipboard = ""
