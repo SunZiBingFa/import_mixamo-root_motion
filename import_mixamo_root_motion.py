@@ -15,7 +15,7 @@ class ImportMixamo():
         self.action = self.obj.animation_data.action
 
         for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{hips_name}"].location':
+            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
                 if curve.array_index == 0:
                     self.curve_x = curve
                 elif curve.array_index == 1:
@@ -80,7 +80,7 @@ class BakeMethod():
         self.method = method
 
         for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{hips_name}"].location':
+            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
                 if curve.array_index == 0:
                     self.curve_x = curve
         
@@ -183,7 +183,7 @@ class RootMotion():
     def __init__(self, hips_name:str):
         self.obj = bpy.context.active_object
         for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{hips_name}"].location':
+            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
                 if curve.array_index == 0:
                     self.curve_x = curve
                 elif curve.array_index == 1:
