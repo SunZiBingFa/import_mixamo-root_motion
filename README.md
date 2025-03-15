@@ -31,7 +31,7 @@ Root Motion 将角色位移烘焙到`Root`骨骼并将它作为父级，烘焙�
 
 ## 使用方法
 1. 安装Blender 4.2.0 或更高版本。
-2. 下载并安装该插件。
+2. 下载并安装该插件。(目前已上传至Blender官方拓展，可于Preferences[首选项]->Get Extensions[获取拓展]，中搜索"Import Mixamo - Root Motion"以获取)
 3. 打开Blender，选择“文件”>“导入”>“Mixamo Fbx(floder/*.fbx)”。
 4. 在打开的对话框中，选择动画文件的文件夹，右侧面板进行设置，点击导入“Import Mixamo *.Fbx”。
 
