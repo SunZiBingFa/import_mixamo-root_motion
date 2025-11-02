@@ -14,14 +14,32 @@ class ImportMixamo():
         self.intensity = self.obj.scale
         self.action = self.obj.animation_data.action
 
-        for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                if curve.array_index == 0:
-                    self.curve_x = curve
-                elif curve.array_index == 1:
-                    self.curve_y = curve
-                elif curve.array_index == 2:
-                    self.curve_z = curve
+        ## According to the method obtained by switching versions
+        if bpy.app.version[0] == 4:
+            ## Blender 4.x.x 
+            for curve in self.action.fcurves:
+                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                    if curve.array_index == 0:
+                        self.curve_x = curve
+                    elif curve.array_index == 1:
+                        self.curve_y = curve
+                    elif curve.array_index == 2:
+                        self.curve_z = curve
+        elif bpy.app.version[0] == 5:
+            ## Blender 5.x.x
+            for layer in self.action.layers:
+                for strip in layer.strips:
+                    for channelbag in strip.channelbags:
+                        for curve in channelbag.fcurves:
+                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                                if curve.array_index == 0:
+                                    self.curve_x = curve
+                                elif curve.array_index == 1:
+                                    self.curve_y = curve
+                                elif curve.array_index == 2:
+                                    self.curve_z = curve
+        else:
+            raise("Temporarily unsupported Blender version")
     
     def rename_action(self, file_path:str):
         """ rename action, new name use file name """
@@ -79,11 +97,25 @@ class BakeMethod():
         self.bake_z = bake_z
         self.method = method
 
-        for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                if curve.array_index == 0:
-                    self.curve_x = curve
-        
+        ## According to the method obtained by switching versions
+        if bpy.app.version[0] == 4:
+            ## Blender 4.x.x 
+            for curve in self.obj.animation_data.action.fcurves:
+                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                    if curve.array_index == 0:
+                        self.curve_x = curve
+        elif bpy.app.version[0] == 5:
+            ## Blender 5.x.x
+            for layer in self.obj.animation_data.action.layers:
+                for strip in layer.strips:
+                    for channelbag in strip.channelbags:
+                        for curve in channelbag.fcurves:
+                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                                if curve.array_index == 0:
+                                    self.curve_x = curve
+        else:
+            raise("Temporarily unsupported Blender version")
+            
         self.frames = []
         for kf in self.curve_x.keyframe_points:
             detail_frame = [int(kf.co.x), float("0." + str(kf.co.x).split('.')[1])]
@@ -182,14 +214,33 @@ class BakeMethod():
 class RootMotion():
     def __init__(self, hips_name:str):
         self.obj = bpy.context.active_object
-        for curve in self.obj.animation_data.action.fcurves:
-            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                if curve.array_index == 0:
-                    self.curve_x = curve
-                elif curve.array_index == 1:
-                    self.curve_y = curve
-                elif curve.array_index == 2:
-                    self.curve_z = curve
+
+        ## According to the method obtained by switching versions
+        if bpy.app.version[0] == 4:
+            ## Blender 4.x.x 
+            for curve in self.obj.animation_data.action.fcurves:
+                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                    if curve.array_index == 0:
+                        self.curve_x = curve
+                    elif curve.array_index == 1:
+                        self.curve_y = curve
+                    elif curve.array_index == 2:
+                        self.curve_z = curve
+        elif bpy.app.version[0] == 5:
+            ## Blender 5.x.x
+            for layer in self.obj.animation_data.action.layers:
+                for strip in layer.strips:
+                    for channelbag in strip.channelbags:
+                        for curve in channelbag.fcurves:
+                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
+                                if curve.array_index == 0:
+                                    self.curve_x = curve
+                                elif curve.array_index == 1:
+                                    self.curve_y = curve
+                                elif curve.array_index == 2:
+                                    self.curve_z = curve
+        else:
+            raise("Temporarily unsupported Blender version")
 
         ## get frames
         self.frames = []  ## -> [ whole_frame=float_value ]
