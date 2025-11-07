@@ -93,7 +93,7 @@ class ImportMixamo():
 
 class BakeMethod():
     """ calculate the height of the root motion """
-    def __init__(self, obj, main_bone_name: str, method: str, is_offset_anim: bool,
+    def __init__(self, obj, main_bone_name: str, method: str, is_start_feet: bool,
                 bake_x: bool, bake_y: bool, bake_z: bool, head_top_bone_name: str,
                 spine_bone_name: str, left_hand_bone_name: str, right_hand_bone_name: str,
                 left_foot_bone_name: str, right_foot_bone_name: str, left_toe_bone_name: str,
@@ -105,7 +105,7 @@ class BakeMethod():
         self.bake_y = bake_y
         self.bake_z = bake_z
         self.method = method
-        self.is_offset_anim = is_offset_anim
+        self.is_start_feet = is_start_feet
 
         self.head_top_bone_name = head_top_bone_name
         self.spine_bone_name = spine_bone_name
@@ -152,7 +152,7 @@ class BakeMethod():
                                 v.y - first_point.y * self.bake_y,
                                 v.z - first_point.z * self.bake_z,
                                 )) for v in root_vectors]
-        first_point = vectors[0] - self.start_point * self.is_offset_anim
+        first_point = vectors[0] - self.start_point * self.is_start_feet
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z + first_point.z * self.bake_z,
@@ -186,7 +186,7 @@ class BakeMethod():
         root_vectors = [Vector((v.x - first_point.x * self.bake_x,
                                 v.y - first_point.y * self.bake_y,
                                 v.z )) for v in root_vectors]
-        first_point = vectors[0] - self.start_point * self.is_offset_anim
+        first_point = vectors[0] - self.start_point * self.is_start_feet
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z )) for v in hips_vectors]
@@ -213,7 +213,7 @@ class BakeMethod():
         root_vectors = [Vector((v.x - first_point.x * self.bake_x,
                                 v.y - first_point.y * self.bake_y,
                                 v.z )) for v in root_vectors]
-        first_point = vectors[0] - self.start_point * self.is_offset_anim
+        first_point = vectors[0] - self.start_point * self.is_start_feet
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z )) for v in hips_vectors]
@@ -279,7 +279,7 @@ class RootMotion():
 
 
 def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bool, is_remove_prefix: bool, 
-        is_suffix_format: bool,is_delete_armature: bool, is_add_root: bool, method: str, is_offset_anim: bool,
+        is_suffix_format: bool,is_delete_armature: bool, is_add_root: bool, method: str, is_start_feet: bool,
         bake_x: bool, bake_y: bool, bake_z: bool, armature_name: str, root_name: str, prefix_name: str,
         main_bone_name: str, head_top_bone_name: str, spine_bone_name: str, left_hand_bone_name: str,
         right_hand_bone_name: str, left_foot_bone_name: str, right_foot_bone_name: str, 
@@ -306,7 +306,7 @@ def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bo
         obj = context.object
         ## class instance
         importer = ImportMixamo(obj, main_bone_name=main_bone_name)
-        bake_method = BakeMethod(obj, main_bone_name=main_bone_name, method=method, is_offset_anim=is_offset_anim,
+        bake_method = BakeMethod(obj, main_bone_name=main_bone_name, method=method, is_start_feet=is_start_feet,
                                 bake_x=bake_x, bake_y=bake_y, bake_z=bake_z, head_top_bone_name=head_top_bone_name,
                                 spine_bone_name=spine_bone_name, left_hand_bone_name=left_hand_bone_name, 
                                 right_hand_bone_name=right_hand_bone_name, left_foot_bone_name=left_foot_bone_name, 
@@ -421,8 +421,8 @@ class BatchImport(Operator, ImportHelper):
         default = 'COPY_HIPS',
     ) # type: ignore
     
-    is_offset_anim: BoolProperty(
-        name = "Root starts feet",
+    is_start_feet: BoolProperty(
+        name = "Root starts from feet",
         description = "Make the Root bone positioned under the feet at the start of the animation",
         default = False,
     ) # type: ignore
@@ -525,7 +525,7 @@ class BatchImport(Operator, ImportHelper):
                 is_apply_transform=self.is_apply_transforms, is_rename_action=self.is_rename_action, 
                 is_remove_prefix=self.is_remove_prefix, is_suffix_format=self.is_suffix_format, 
                 is_delete_armature=self.is_delete_armature, 
-                is_add_root=self.is_add_root, method=self.method, is_offset_anim=self.is_offset_anim,
+                is_add_root=self.is_add_root, method=self.method, is_start_feet=self.is_start_feet,
                 bake_x=self.bake_x, bake_y=self.bake_y, bake_z=self.bake_z,
                 armature_name=self.armature_name, root_name=self.root_name, prefix_name=self.prefix_name,
                 main_bone_name=self.main_bone_name, head_top_bone_name=self.head_top_bone_name,
@@ -583,7 +583,7 @@ class IMPORT_PT_bake_settings(Panel):
         operator = sfile.active_operator
 
         layout.prop(operator, 'method')
-        layout.prop(operator, 'is_offset_anim', icon='ACTION')
+        layout.prop(operator, 'is_start_feet', icon='ACTION')
 
         row = layout.row(align=True)
         row.prop(operator, 'bake_x', icon='KEYFRAME_HLT')
