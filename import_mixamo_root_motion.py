@@ -3,43 +3,35 @@ import os
 
 from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty, CollectionProperty
-from bpy.types import Operator, Panel
+from bpy.types import Operator, Panel, Object, Action
+from bpy.utils import escape_identifier
 from mathutils import Vector
 
 
-class ImportMixamo():
-    def __init__(self, hips_name:str):
-        """ init variables """
-        self.obj = bpy.context.active_object
-        self.intensity = self.obj.scale
-        self.action = self.obj.animation_data.action
+def get_fcurve(action: Action, main_bone: str):
+    """ bone: fcurve; According to the method obtained by switching versions """
+    if bpy.app.version >= (4, 4, 0):
+        ## When importing an FBX file, the slot and strip automatically created by Blender are set to the first one by default.
+        slot = action.slots[0]
+        strip = action.layers[0].strips[0]
+        channelbag = strip.channelbag(slot)
+        curve_x = channelbag.fcurves.find(f'pose.bones["{main_bone}"].location', index=0)
+        curve_y = channelbag.fcurves.find(f'pose.bones["{main_bone}"].location', index=1)
+        curve_z = channelbag.fcurves.find(f'pose.bones["{main_bone}"].location', index=2)
+    else:
+        curve_x = action.fcurves.find(f'pose.bones["{main_bone}"].location', index=0)
+        curve_y = action.fcurves.find(f'pose.bones["{main_bone}"].location', index=1)
+        curve_z = action.fcurves.find(f'pose.bones["{main_bone}"].location', index=2)
 
-        ## According to the method obtained by switching versions
-        if bpy.app.version[0] == 4:
-            ## Blender 4.x.x 
-            for curve in self.action.fcurves:
-                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                    if curve.array_index == 0:
-                        self.curve_x = curve
-                    elif curve.array_index == 1:
-                        self.curve_y = curve
-                    elif curve.array_index == 2:
-                        self.curve_z = curve
-        elif bpy.app.version[0] == 5:
-            ## Blender 5.x.x
-            for layer in self.action.layers:
-                for strip in layer.strips:
-                    for channelbag in strip.channelbags:
-                        for curve in channelbag.fcurves:
-                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                                if curve.array_index == 0:
-                                    self.curve_x = curve
-                                elif curve.array_index == 1:
-                                    self.curve_y = curve
-                                elif curve.array_index == 2:
-                                    self.curve_z = curve
-        else:
-            raise("Temporarily unsupported Blender version")
+    return curve_x, curve_y, curve_z
+
+class ImportMixamo():
+    def __init__(self, obj: Object, main_bone_name: str):
+        """ init variables """
+        self.obj = obj
+        self.intensity = self.obj.scale.copy()
+        self.action = self.obj.animation_data.action
+        self.curve_x, self.curve_y, self.curve_z = get_fcurve(action=self.action, main_bone=main_bone_name)
     
     def rename_action(self, file_path:str):
         """ rename action, new name use file name """
@@ -52,6 +44,17 @@ class ImportMixamo():
         for bone in bones:
             if bone.name.startswith(prefix_name):
                 bone.name = bone.name.replace(prefix_name, "")
+        return {'FINISHED'}
+    
+    def suffix_format(self):
+        """ Use lowercase bone names, remove 'left'/'right' from the names, and replace them with a '.L'/.R' suffix """
+        bones = self.obj.pose.bones
+        for bone in bones:
+            bone.name = bone.name.lower()
+            if "left" in bone.name:
+                bone.name = bone.name.replace("left", "") + ".L"
+            elif "right" in bone.name:
+                bone.name = bone.name.replace("right", "") + ".R"
         return {'FINISHED'}
 
     def delete_armature(self, armature_name:str):
@@ -79,43 +82,44 @@ class ImportMixamo():
             kf.co.y *= self.intensity.z
         return {'FINISHED'}
     
-    def set_parent(self, child_bone_name:str, parent_bone_name:str):
+    def set_parent(self, child_bone:str, parent_bone:str):
         """ set parent of the root bone """
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         bpy.context.scene.frame_set(1)
-        self.obj.data.edit_bones[child_bone_name].parent = self.obj.data.edit_bones[parent_bone_name]
+        self.obj.data.edit_bones[child_bone].parent = self.obj.data.edit_bones[parent_bone]
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         return {'FINISHED'}
 
+
 class BakeMethod():
     """ calculate the height of the root motion """
-    def __init__(self, hips_name:str, method:str, bake_x:bool, bake_y:bool, bake_z:bool):
-        self.obj = bpy.context.active_object
-        self.hips_name = hips_name
+    def __init__(self, obj, main_bone_name: str, method: str, is_offset_anim: bool,
+                bake_x: bool, bake_y: bool, bake_z: bool, head_top_bone_name: str,
+                spine_bone_name: str, left_hand_bone_name: str, right_hand_bone_name: str,
+                left_foot_bone_name: str, right_foot_bone_name: str, left_toe_bone_name: str,
+                right_toe_bone_name: str):
+        self.obj = obj
+        self.action = obj.animation_data.action
+        self.main_bone_name = main_bone_name
         self.bake_x = bake_x
         self.bake_y = bake_y
         self.bake_z = bake_z
         self.method = method
+        self.is_offset_anim = is_offset_anim
 
-        ## According to the method obtained by switching versions
-        if bpy.app.version[0] == 4:
-            ## Blender 4.x.x 
-            for curve in self.obj.animation_data.action.fcurves:
-                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                    if curve.array_index == 0:
-                        self.curve_x = curve
-        elif bpy.app.version[0] == 5:
-            ## Blender 5.x.x
-            for layer in self.obj.animation_data.action.layers:
-                for strip in layer.strips:
-                    for channelbag in strip.channelbags:
-                        for curve in channelbag.fcurves:
-                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                                if curve.array_index == 0:
-                                    self.curve_x = curve
-        else:
-            raise("Temporarily unsupported Blender version")
-            
+        self.head_top_bone_name = head_top_bone_name
+        self.spine_bone_name = spine_bone_name
+        self.left_hand_bone_name = left_hand_bone_name
+        self.right_hand_bone_name = right_hand_bone_name
+        self.left_foot_bone_name = left_foot_bone_name
+        self.right_foot_bone_name = right_foot_bone_name
+        self.left_toe_bone_name = left_toe_bone_name
+        self.right_toe_bone_name = right_toe_bone_name
+
+        self.start_point = self.get_start_point()
+
+        self.curve_x, _, _ = get_fcurve(action=self.action, main_bone=main_bone_name)
+
         self.frames = []
         for kf in self.curve_x.keyframe_points:
             detail_frame = [int(kf.co.x), float("0." + str(kf.co.x).split('.')[1])]
@@ -123,13 +127,21 @@ class BakeMethod():
     
     def get_location_in_world(self, bone_name:str) -> Vector:
         return self.obj.matrix_world @ self.obj.pose.bones[bone_name].head
+    
+    def get_start_point(self):
+        """ get first point 待完成... """
+        bpy.context.scene.frame_set(1)
+        left_foot = self.get_location_in_world(bone_name=self.left_foot_bone_name)
+        right_foot = self.get_location_in_world(bone_name=self.right_foot_bone_name)
+        start_point = (left_foot + right_foot) / 2 * Vector((1, 1, 0))
+        return start_point
 
     def copy_for_hips(self):
         """ copy for hips bone location in world """
         vectors, root_vectors = [], []
         for f in self.frames:
             bpy.context.scene.frame_set(f[0], subframe=f[1])
-            vectors.append(self.get_location_in_world(bone_name=self.hips_name))
+            vectors.append(self.get_location_in_world(bone_name=self.main_bone_name))
         root_vectors = [Vector((v.x * self.bake_x,
                                 v.y * self.bake_y,
                                 v.z * self.bake_z
@@ -140,38 +152,41 @@ class BakeMethod():
                                 v.y - first_point.y * self.bake_y,
                                 v.z - first_point.z * self.bake_z,
                                 )) for v in root_vectors]
+        first_point = vectors[0] - self.start_point * self.is_offset_anim
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z + first_point.z * self.bake_z,
                                 )) for v in hips_vectors]
         return root_vectors, hips_vectors
 
-    def main_bone(self):
+    def main_bones(self):
         """ get main bone y_loc min_value (World Coordinate System)"""
-        vectors, height_ls = [], []
+        vectors, min_height_ls = [], []
         for f in self.frames:
             bpy.context.scene.frame_set(f[0], subframe=f[1])
-            vectors.append(self.get_location_in_world(bone_name=self.hips_name))
+            vectors.append(self.get_location_in_world(bone_name=self.main_bone_name))
             ## get main bone lowest height
-            headtop = self.obj.pose.bones["mixamorig:HeadTop_End"]
-            lefthand = self.obj.pose.bones["mixamorig:LeftHand"]
-            righthand = self.obj.pose.bones["mixamorig:RightHand"]
-            spline = self.obj.pose.bones["mixamorig:Spine"]
-            lefttoe = self.obj.pose.bones["mixamorig:LeftToe_End"]
-            righttoe = self.obj.pose.bones["mixamorig:RightToe_End"]
-            height = min(headtop.head[2], lefthand.head[2], righthand.head[2], 
-                        spline.head[2], lefttoe.head[2],  righttoe.head[2])
-            height_ls.append(height)
+            headtop = self.obj.pose.bones[self.head_top_bone_name]
+            lefthand = self.obj.pose.bones[self.left_hand_bone_name]
+            righthand = self.obj.pose.bones[self.right_hand_bone_name]
+            spine = self.obj.pose.bones[self.spine_bone_name]
+            lefttoe = self.obj.pose.bones[self.left_toe_bone_name]
+            righttoe = self.obj.pose.bones[self.right_toe_bone_name]
+            min_height = min(headtop.head[2], lefthand.head[2], righthand.head[2], 
+                        spine.head[2], lefttoe.head[2],  righttoe.head[2])
+            min_height_ls.append(min_height)
+
         root_vectors = [Vector((vectors[i].x * self.bake_x,
                                 vectors[i].y * self.bake_y,
-                                height_ls[i] * self.bake_z
+                                min_height_ls[i] * self.bake_z
                                 )) for i in range(len(vectors))]
         hips_vectors = [vectors[i] - root_vectors[i] for i in range(len(vectors))]
         ## root_on_floor x/z
-        first_point = vectors[0]
+        first_point = vectors[0] - self.start_point
         root_vectors = [Vector((v.x - first_point.x * self.bake_x,
                                 v.y - first_point.y * self.bake_y,
                                 v.z )) for v in root_vectors]
+        first_point = vectors[0] - self.start_point * self.is_offset_anim
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z )) for v in hips_vectors]
@@ -182,20 +197,23 @@ class BakeMethod():
         vectors, root_vectors, hips_vectors, lowest_points = [], [], [], []
         for f in self.frames:
             bpy.context.scene.frame_set(f[0], subframe=f[1])
-            bound_box_loc = [b[:] for b in self.obj.bound_box]
-            low_point = Vector((min(x) for x in (list(zip(*bound_box_loc)))))
-            vectors.append(self.get_location_in_world(bone_name=self.hips_name))
-            lowest_points.append(low_point)
+            vectors.append(self.get_location_in_world(bone_name=self.main_bone_name))
+
+            bound_box = [self.obj.matrix_world @ Vector(v) for v in self.obj.bound_box]
+            lowest_point = min(bound_box, key=lambda v:v.z)
+            lowest_points.append(lowest_point)
+
         root_vectors = [Vector((vectors[i].x * self.bake_x,
                                 vectors[i].y * self.bake_y,
                                 lowest_points[i].z * self.bake_z
                                 )) for i in range(len(vectors))]
         hips_vectors = [vectors[i] - root_vectors[i] for i in range(len(vectors))]
         ## root_on_floor x / z
-        first_point = root_vectors[0]
+        first_point = root_vectors[0] - self.start_point
         root_vectors = [Vector((v.x - first_point.x * self.bake_x,
                                 v.y - first_point.y * self.bake_y,
                                 v.z )) for v in root_vectors]
+        first_point = vectors[0] - self.start_point * self.is_offset_anim
         hips_vectors = [Vector((v.x + first_point.x * self.bake_x,
                                 v.y + first_point.y * self.bake_y,
                                 v.z )) for v in hips_vectors]
@@ -206,41 +224,16 @@ class BakeMethod():
             case "COPY_HIPS":
                 return self.copy_for_hips()
             case "MAIN_BONE":
-                return self.main_bone()
+                return self.main_bones()
             case "BOUND_BOX":
                 return self.bound_box()
 
 
 class RootMotion():
-    def __init__(self, hips_name:str):
-        self.obj = bpy.context.active_object
-
-        ## According to the method obtained by switching versions
-        if bpy.app.version[0] == 4:
-            ## Blender 4.x.x 
-            for curve in self.obj.animation_data.action.fcurves:
-                if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                    if curve.array_index == 0:
-                        self.curve_x = curve
-                    elif curve.array_index == 1:
-                        self.curve_y = curve
-                    elif curve.array_index == 2:
-                        self.curve_z = curve
-        elif bpy.app.version[0] == 5:
-            ## Blender 5.x.x
-            for layer in self.obj.animation_data.action.layers:
-                for strip in layer.strips:
-                    for channelbag in strip.channelbags:
-                        for curve in channelbag.fcurves:
-                            if curve.data_path == f'pose.bones["{bpy.utils.escape_identifier(hips_name)}"].location':
-                                if curve.array_index == 0:
-                                    self.curve_x = curve
-                                elif curve.array_index == 1:
-                                    self.curve_y = curve
-                                elif curve.array_index == 2:
-                                    self.curve_z = curve
-        else:
-            raise("Temporarily unsupported Blender version")
+    def __init__(self, obj, main_bone_name:str):
+        self.obj = obj
+        self.action = self.obj.animation_data.action
+        self.curve_x, self.curve_y, self.curve_z = get_fcurve(self.action, main_bone=main_bone_name)
 
         ## get frames
         self.frames = []  ## -> [ whole_frame=float_value ]
@@ -285,24 +278,41 @@ class RootMotion():
         return {'FINISHED'}
 
 
-def import_mixamo_root_motion(context, file_path: str, is_apply_transform: bool, 
-                              is_rename_action: bool, is_remove_prefix: bool, 
-                              is_delete_armature: bool, is_add_root: bool,
-                              method: str, bake_x: bool, bake_y: bool, bake_z: bool):
+def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bool, is_remove_prefix: bool, 
+        is_suffix_format: bool,is_delete_armature: bool, is_add_root: bool, method: str, is_offset_anim: bool,
+        bake_x: bool, bake_y: bool, bake_z: bool, armature_name: str, root_name: str, prefix_name: str,
+        main_bone_name: str, head_top_bone_name: str, spine_bone_name: str, left_hand_bone_name: str,
+        right_hand_bone_name: str, left_foot_bone_name: str, right_foot_bone_name: str, 
+        left_toe_bone_name: str,right_toe_bone_name: str,
+        ):
     """ main - batch """
     ## Parameters
-    root_name = "Root"
-    hips_name = "mixamorig:Hips"
-    prefix_name = "mixamorig:"
-    armature_name = "Armature"
+    armature_name = escape_identifier(armature_name)
+    root_name = escape_identifier(root_name)
+    prefix_name = escape_identifier(prefix_name)
+    main_bone_name = escape_identifier(main_bone_name)
+    head_top_bone_name = escape_identifier(head_top_bone_name)
+    spine_bone_name = escape_identifier(spine_bone_name)
+    left_hand_bone_name = escape_identifier(left_hand_bone_name)
+    right_hand_bone_name = escape_identifier(right_hand_bone_name)
+    left_foot_bone_name = escape_identifier(left_foot_bone_name)
+    right_foot_bone_name = escape_identifier(right_foot_bone_name)
+    left_toe_bone_name = escape_identifier(left_toe_bone_name)
+    right_toe_bone_name = escape_identifier(right_toe_bone_name)
+
     try:
         bpy.ops.import_scene.fbx(filepath=file_path)  ## import fbx file
 
+        obj = context.object
         ## class instance
-        importer = ImportMixamo(hips_name=hips_name)
-        bake_method = BakeMethod(hips_name=hips_name, method=method,
-                                bake_x=bake_x, bake_y=bake_y, bake_z=bake_z)
-        root_motion = RootMotion(hips_name=hips_name)
+        importer = ImportMixamo(obj, main_bone_name=main_bone_name)
+        bake_method = BakeMethod(obj, main_bone_name=main_bone_name, method=method, is_offset_anim=is_offset_anim,
+                                bake_x=bake_x, bake_y=bake_y, bake_z=bake_z, head_top_bone_name=head_top_bone_name,
+                                spine_bone_name=spine_bone_name, left_hand_bone_name=left_hand_bone_name, 
+                                right_hand_bone_name=right_hand_bone_name, left_foot_bone_name=left_foot_bone_name, 
+                                right_foot_bone_name=right_foot_bone_name, left_toe_bone_name=left_toe_bone_name,
+                                right_toe_bone_name=right_toe_bone_name)
+        root_motion = RootMotion(obj, main_bone_name=main_bone_name)
 
         ## apply transform and fix animation
         if is_apply_transform:
@@ -317,16 +327,18 @@ def import_mixamo_root_motion(context, file_path: str, is_apply_transform: bool,
         # ## bake root motion keyframes
         if is_add_root and (bake_x, bake_y, bake_z):
             root_motion.bake_keyframes(bone_name=root_name, vectors=root_vectors)
-            root_motion.edit_keyframes(bone_name=hips_name, vectors=hips_vectors)
+            root_motion.edit_keyframes(bone_name=main_bone_name, vectors=hips_vectors)
         # ## set parent
         if is_add_root:
-            importer.set_parent(child_bone_name=hips_name, parent_bone_name=root_name)
+            importer.set_parent(child_bone=main_bone_name, parent_bone=root_name)
         # ## rename action
         if is_rename_action:
             importer.rename_action(file_path=file_path)
         # ## remove prefix
         if is_remove_prefix:
             importer.remove_prefix_name(prefix_name=prefix_name)
+        if is_suffix_format:
+            importer.suffix_format()
         # ## delete armature
         if is_delete_armature:
             importer.delete_armature(armature_name=armature_name)
@@ -347,91 +359,181 @@ class BatchImport(Operator, ImportHelper):
     filename_ext = ".fbx"
     
     files: CollectionProperty(
-        type=bpy.types.OperatorFileListElement,
-        options={'HIDDEN', 'SKIP_SAVE'},
+        type = bpy.types.OperatorFileListElement,
+        options = {'HIDDEN', 'SKIP_SAVE'},
     ) # type: ignore
 
     directory: StringProperty(
-        subtype='DIR_PATH'
+        subtype = 'DIR_PATH'
     ) # type: ignore
     
     filter_glob: StringProperty(
-        default="*.fbx",
-        options={'HIDDEN'},
-        maxlen=255,
+        default = "*.fbx",
+        options = {'HIDDEN'},
+        maxlen = 255,
     ) # type: ignore
 
     # List of operator properties
     is_apply_transforms: BoolProperty(
-        name="Apply Transform",
-        description="Recommended to keep it checked and fix animation, apply all transforms, if unchecked, root motion will have unpredictable results",
-        default=True,
+        name = "Apply Transform",
+        description = "Recommended to keep it checked and fix animation, apply all transforms, if unchecked, root motion will have unpredictable results",
+        default = True,
     ) # type: ignore
     
     is_add_root: BoolProperty(
-        name="Add Root Bone",
-        description="Add the root bone and set as parent, Root Motion use this bone to bake keyframes, if unchecked, Root Motion will not work.",
-        default=True,
+        name = "Add Root Bone",
+        description = "Add the root bone and set as parent, Root Motion use this bone to bake keyframes, if unchecked, Root Motion will not work.",
+        default = True,
     ) # type: ignore
     
     is_rename_action: BoolProperty(
-        name="Rename Action",
-        description="Rename the name of the action animation using the filename",
-        default=True,
+        name = "Rename Action",
+        description = "Rename the name of the action animation using the filename",
+        default = True,
     ) # type: ignore
     
     is_remove_prefix: BoolProperty(
-        name="Remove prefix",
-        description="Remove prefix names from all bones <mixamorig:>",
-        default=True,
+        name = "Remove prefix",
+        description = "Remove prefix names from all bones <mixamorig:>",
+        default = True,
+    ) # type: ignore
+
+    is_suffix_format: BoolProperty(
+        name = "Suffix format",
+        description = "Use the .L/.R suffix format instead of Left/Right, and make the other letters lowercase.",
+        default = True,
     ) # type: ignore
     
     is_delete_armature: BoolProperty(
-        name="Remove Armature",
-        description="Remove object <Armature.00*>",
-        default=True,
+        name = "Remove Armature",
+        description = "Remove object <Armature.00*>",
+        default = True,
     ) # type: ignore
     
     method: EnumProperty(
-        name="Method",
-        description="Root-Motion -> Bake keyframes: Height bake method",
-        items=(
+        name = "Method",
+        description = "Root-Motion -> Bake keyframes: Height bake method",
+        items = (
             ('COPY_HIPS', "Copy", "Copy from hips bone transform in wrold space"),
             ('MAIN_BONE', "Bone", "Copy hips bone X/Y, get lowest bone height as Z"),
             ('BOUND_BOX', "Bound box", "Copy hips bone X/Y, get Bound Box lowest as Z"),
         ),
-        default='COPY_HIPS',
+        default = 'COPY_HIPS',
     ) # type: ignore
     
+    is_offset_anim: BoolProperty(
+        name = "Root starts feet",
+        description = "Make the Root bone positioned under the feet at the start of the animation",
+        default = False,
+    ) # type: ignore
+
     bake_x: BoolProperty(
-        name="X",
-        description="Baking <X Location> to the Root Bone",
-        default=True,
+        name = "X",
+        description = "Baking <X Location> to the Root Bone",
+        default = True,
     ) # type: ignore
     
     bake_y: BoolProperty(
-        name="Y",
-        description="Baking <Y Location> to the Root Bone",
-        default=True,
+        name = "Y",
+        description = "Baking <Y Location> to the Root Bone",
+        default = True,
     ) # type: ignore
     
     bake_z: BoolProperty(
-        name="Z",
-        description="Baking <Z Location> to the Root Bone - Height",
-        default=False,
+        name = "Z",
+        description = "Baking <Z Location> to the Root Bone - Height",
+        default = False,
     ) # type: ignore
     
+    ## name settings
+    armature_name: StringProperty(
+        name = "Armature",
+        description = "Armature name",
+        default = "Armature",
+    ) # type: ignore
+
+    root_name: StringProperty(
+        name = "Root",
+        description = "Root name",
+        default = "root",
+    ) # type: ignore
+
+    prefix_name: StringProperty(
+        name = "Prefix",
+        description = "Prefix name",
+        default = "mixamorig:",
+    ) # type: ignore
+
+    main_bone_name: StringProperty(
+        name = "Main bone",
+        description = "The source of motion animation data",
+        default = "mixamorig:Hips",
+    ) # type: ignore
+
+    head_top_bone_name: StringProperty(
+        name = "Head top",
+        description = "head top bone name",
+        default = "mixamorig:HeadTop_End",
+    ) # type: ignore
+
+    left_hand_bone_name: StringProperty(
+        name = "Left hand",
+        description = "left hand bone name",
+        default = "mixamorig:LeftHand",
+    ) # type: ignore
+
+    right_hand_bone_name: StringProperty(
+        name = "Right hand",
+        description = "Right hand bone name",
+        default = "mixamorig:RightHand",
+    ) # type: ignore
+
+    left_foot_bone_name: StringProperty(
+        name = "Left foot",
+        description = "Left foot bone name",
+        default = "mixamorig:LeftFoot",
+    ) # type: ignore
+
+    right_foot_bone_name: StringProperty(
+        name = "Right foot",
+        description = "Right foot bone name",
+        default = "mixamorig:RightFoot",
+    ) # type: ignore
+
+    left_toe_bone_name: StringProperty(
+        name = "Left toe",
+        description = "left toe bone name",
+        default = "mixamorig:LeftToe_End",
+    ) # type: ignore
+
+    right_toe_bone_name: StringProperty(
+        name = "Right toe",
+        description = "right toe bone name",
+        default = "mixamorig:RightToe_End",
+    ) # type: ignore
+
+    spine_bone_name: StringProperty(
+        name = "Spine",
+        description = "spine bone name",
+        default = "mixamorig:Spine",
+    ) # type: ignore
+
     def execute(self, context):
         for file in self.files:
             file_path = os.path.join(self.directory, file.name)
-            import_mixamo_root_motion(context, file_path=file_path, 
-                                        is_apply_transform=self.is_apply_transforms, 
-                                        is_rename_action=self.is_rename_action, 
-                                        is_remove_prefix=self.is_remove_prefix, 
-                                        is_delete_armature=self.is_delete_armature, 
-                                        is_add_root=self.is_add_root,
-                                        method=self.method, bake_x=self.bake_x, 
-                                        bake_y=self.bake_y, bake_z=self.bake_z)
+            main(context, file_path=file_path, 
+                is_apply_transform=self.is_apply_transforms, is_rename_action=self.is_rename_action, 
+                is_remove_prefix=self.is_remove_prefix, is_suffix_format=self.is_suffix_format, 
+                is_delete_armature=self.is_delete_armature, 
+                is_add_root=self.is_add_root, method=self.method, is_offset_anim=self.is_offset_anim,
+                bake_x=self.bake_x, bake_y=self.bake_y, bake_z=self.bake_z,
+                armature_name=self.armature_name, root_name=self.root_name, prefix_name=self.prefix_name,
+                main_bone_name=self.main_bone_name, head_top_bone_name=self.head_top_bone_name,
+                spine_bone_name=self.spine_bone_name, left_hand_bone_name=self.left_hand_bone_name,
+                right_hand_bone_name=self.right_hand_bone_name, left_foot_bone_name=self.left_foot_bone_name, 
+                right_foot_bone_name=self.right_foot_bone_name, left_toe_bone_name=self.left_toe_bone_name,
+                right_toe_bone_name=self.right_toe_bone_name,
+                )
         return {'FINISHED'}
     
     def draw(self, context):
@@ -457,6 +559,7 @@ class IMPORT_PT_base_settings(Panel):
         column.prop(operator, 'is_apply_transforms', icon='CON_TRANSFORM')
         column.prop(operator, 'is_add_root', icon='GROUP_BONE')
         column.prop(operator, 'is_remove_prefix', icon='BONE_DATA')
+        column.prop(operator, 'is_suffix_format', icon='BONE_DATA')
         column.prop(operator, 'is_rename_action', icon='ACTION')
         column.prop(operator, 'is_delete_armature', icon='TRASH')
 
@@ -480,11 +583,45 @@ class IMPORT_PT_bake_settings(Panel):
         operator = sfile.active_operator
 
         layout.prop(operator, 'method')
+        layout.prop(operator, 'is_offset_anim', icon='ACTION')
 
         row = layout.row(align=True)
         row.prop(operator, 'bake_x', icon='KEYFRAME_HLT')
         row.prop(operator, 'bake_y', icon='KEYFRAME_HLT')
         row.prop(operator, 'bake_z', icon='KEYFRAME_HLT')
+
+## Panel: name settings
+class IMPORT_PT_name_settings(Panel):
+    bl_space_type = 'FILE_BROWSER'
+    bl_region_type = 'TOOL_PROPS'
+    bl_label = "Name Settings"
+    bl_parent_id = "IMPORT_PT_base_settings"
+    bl_options = {'DEFAULT_CLOSED'}
+    
+    @classmethod
+    def poll(cls, context):
+        sfile = context.space_data
+        operator = sfile.active_operator
+        return operator.bl_idname == "IMPORT_MIXAMO_OT_root_motion"
+
+    def draw(self, context):
+        layout = self.layout
+        sfile = context.space_data
+        operator = sfile.active_operator
+
+        column = layout.column(align=True)
+        column.prop(operator, 'armature_name')
+        column.prop(operator, 'root_name')
+        column.prop(operator, 'prefix_name')
+        column.prop(operator, 'main_bone_name')
+        column.prop(operator, 'head_top_bone_name')
+        column.prop(operator, 'spine_bone_name')
+        column.prop(operator, 'left_hand_bone_name')
+        column.prop(operator, 'right_hand_bone_name')
+        column.prop(operator, 'left_foot_bone_name')
+        column.prop(operator, 'right_foot_bone_name')
+        column.prop(operator, 'left_toe_bone_name')
+        column.prop(operator, 'right_toe_bone_name')
 
 
 def menu_func_import(self, context):
@@ -495,12 +632,14 @@ def register():
     bpy.utils.register_class(BatchImport)
     bpy.utils.register_class(IMPORT_PT_base_settings)
     bpy.utils.register_class(IMPORT_PT_bake_settings)
+    bpy.utils.register_class(IMPORT_PT_name_settings)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
     bpy.utils.unregister_class(BatchImport)
-    bpy.utils.unregister_class(IMPORT_PT_bake_settings)
     bpy.utils.unregister_class(IMPORT_PT_base_settings)
+    bpy.utils.unregister_class(IMPORT_PT_bake_settings)
+    bpy.utils.unregister_class(IMPORT_PT_name_settings)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 if __name__ == "__main__":
