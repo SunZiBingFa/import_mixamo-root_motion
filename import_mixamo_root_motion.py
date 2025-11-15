@@ -136,8 +136,8 @@ class BakeMethod():
         start_point = (left_foot + right_foot) / 2 * Vector((1, 1, 0))
         return start_point
 
-    def copy_for_hips(self):
-        """ copy for hips bone location in world """
+    def copy_for_main_bone(self):
+        """ copy for main bone [mixamorig:Hips] location in world """
         vectors, root_vectors = [], []
         for f in self.frames:
             bpy.context.scene.frame_set(f[0], subframe=f[1])
@@ -159,7 +159,7 @@ class BakeMethod():
                                 )) for v in hips_vectors]
         return root_vectors, hips_vectors
 
-    def main_bones(self):
+    def get_lowest_bone_height(self):
         """ get main bone y_loc min_value (World Coordinate System)"""
         vectors, min_height_ls = [], []
         for f in self.frames:
@@ -192,7 +192,7 @@ class BakeMethod():
                                 v.z )) for v in hips_vectors]
         return root_vectors, hips_vectors
 
-    def bound_box(self):
+    def get_bound_box_bottom(self):
         """ get bound box center """
         vectors, root_vectors, hips_vectors, lowest_points = [], [], [], []
         for f in self.frames:
@@ -221,12 +221,12 @@ class BakeMethod():
 
     def run(self):
         match self.method:
-            case "COPY_HIPS":
-                return self.copy_for_hips()
-            case "MAIN_BONE":
-                return self.main_bones()
+            case "COPY_DATA":
+                return self.copy_for_main_bone()
+            case "LOWEST_BONE":
+                return self.get_lowest_bone_height()
             case "BOUND_BOX":
-                return self.bound_box()
+                return self.get_bound_box_bottom()
 
 
 class RootMotion():
@@ -375,73 +375,73 @@ class BatchImport(Operator, ImportHelper):
 
     # List of operator properties
     is_apply_transforms: BoolProperty(
-        name = "Apply Transform",
-        description = "Recommended to keep it checked and fix animation, apply all transforms, if unchecked, root motion will have unpredictable results",
+        name = "Apply transform",
+        description = "Apply the object's transform properties and fix animation intensity",
         default = True,
     ) # type: ignore
     
     is_add_root: BoolProperty(
-        name = "Add Root Bone",
-        description = "Add the root bone and set as parent, Root Motion use this bone to bake keyframes, if unchecked, Root Motion will not work.",
+        name = "Add root bone",
+        description = "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root' in 'Name Settings' for details",
         default = True,
     ) # type: ignore
     
     is_rename_action: BoolProperty(
-        name = "Rename Action",
-        description = "Rename the name of the action animation using the filename",
+        name = "Rename action",
+        description = "Rename actions using the file name",
         default = True,
     ) # type: ignore
     
     is_remove_prefix: BoolProperty(
         name = "Remove prefix",
-        description = "Remove prefix names from all bones <mixamorig:>",
+        description = "Rename bones by removing the <mixamorig:> prefix from all bones. See 'Prefix' in 'Name Settings' for details",
         default = True,
     ) # type: ignore
 
     is_suffix_format: BoolProperty(
         name = "Suffix format",
-        description = "Use the .L/.R suffix format instead of Left/Right, and make the other letters lowercase.",
+        description = "Rename bones by replacing 'Left/Right' in bone names with '.L/.R' suffixes and converting other letters to lowercase",
         default = True,
     ) # type: ignore
     
     is_delete_armature: BoolProperty(
-        name = "Remove Armature",
-        description = "Remove object <Armature.00*>",
+        name = "Remove armature",
+        description = "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature' in 'Name Settings' for details",
         default = True,
     ) # type: ignore
     
     method: EnumProperty(
         name = "Method",
-        description = "Root-Motion -> Bake keyframes: Height bake method",
+        description = "Calculation method for the height axis when baking keyframes; planar motion uses copy method",
         items = (
-            ('COPY_HIPS', "Copy", "Copy from hips bone transform in wrold space"),
-            ('MAIN_BONE', "Bone", "Copy hips bone X/Y, get lowest bone height as Z"),
-            ('BOUND_BOX', "Bound box", "Copy hips bone X/Y, get Bound Box lowest as Z"),
+            ('COPY_DATA', "Copy", "Copy position keyframes of the main bone in world coordinates. See 'Main bone' in 'Name Settings' for details"),
+            ('LOWEST_BONE', "Bone", "Get the height of the lowest bone from six key bones as height axis data. See 'Name Settings' for details"),
+            ('BOUND_BOX', "Bound box", "Get the height of the bottom of the bounding box"),
         ),
-        default = 'COPY_HIPS',
+        default = 'COPY_DATA',
     ) # type: ignore
     
     is_start_feet: BoolProperty(
         name = "Root starts from feet",
-        description = "Make the Root bone positioned under the feet at the start of the animation",
+        description = "Root bone initially positioned at the feet; used for cases where the armature is not at world center in initial state",
         default = False,
     ) # type: ignore
 
     bake_x: BoolProperty(
         name = "X",
-        description = "Baking <X Location> to the Root Bone",
+        description = "Bake <Location X> property to root bone",
         default = True,
     ) # type: ignore
     
     bake_y: BoolProperty(
         name = "Y",
-        description = "Baking <Y Location> to the Root Bone",
+        description = "Bake <Location Y> property to root bone",
         default = True,
     ) # type: ignore
     
     bake_z: BoolProperty(
         name = "Z",
-        description = "Baking <Z Location> to the Root Bone - Height",
+        description = "Bake <Location Z> property to root bone",
         default = False,
     ) # type: ignore
     
@@ -466,19 +466,19 @@ class BatchImport(Operator, ImportHelper):
 
     main_bone_name: StringProperty(
         name = "Main bone",
-        description = "The source of motion animation data",
+        description = "Original root bone name, which contains animation data",
         default = "mixamorig:Hips",
     ) # type: ignore
 
     head_top_bone_name: StringProperty(
         name = "Head top",
-        description = "head top bone name",
+        description = "Head top bone name",
         default = "mixamorig:HeadTop_End",
     ) # type: ignore
 
     left_hand_bone_name: StringProperty(
         name = "Left hand",
-        description = "left hand bone name",
+        description = "Left hand bone name",
         default = "mixamorig:LeftHand",
     ) # type: ignore
 
@@ -502,19 +502,19 @@ class BatchImport(Operator, ImportHelper):
 
     left_toe_bone_name: StringProperty(
         name = "Left toe",
-        description = "left toe bone name",
+        description = "Left toe bone name",
         default = "mixamorig:LeftToe_End",
     ) # type: ignore
 
     right_toe_bone_name: StringProperty(
         name = "Right toe",
-        description = "right toe bone name",
+        description = "Right toe bone name",
         default = "mixamorig:RightToe_End",
     ) # type: ignore
 
     spine_bone_name: StringProperty(
         name = "Spine",
-        description = "spine bone name",
+        description = "Spine bone name",
         default = "mixamorig:Spine",
     ) # type: ignore
 
@@ -636,11 +636,11 @@ def register():
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
-    bpy.utils.unregister_class(BatchImport)
-    bpy.utils.unregister_class(IMPORT_PT_base_settings)
-    bpy.utils.unregister_class(IMPORT_PT_bake_settings)
-    bpy.utils.unregister_class(IMPORT_PT_name_settings)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.utils.unregister_class(IMPORT_PT_name_settings)
+    bpy.utils.unregister_class(IMPORT_PT_bake_settings)
+    bpy.utils.unregister_class(IMPORT_PT_base_settings)
+    bpy.utils.unregister_class(BatchImport)
 
 if __name__ == "__main__":
     register()

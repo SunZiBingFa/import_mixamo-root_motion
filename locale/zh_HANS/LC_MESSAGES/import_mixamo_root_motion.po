@@ -1,0 +1,217 @@
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: Import Mixamo - Root Motion 1.0.3 (0)\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-15 02:30+0800\n"
+"PO-Revision-Date: 2025-11-15 13:57+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
+msgid " Batch import "
+msgstr "批量导入"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
+msgctxt "Operator"
+msgid "Import Mixamo *.Fbx"
+msgstr "导入 Mixamo *.Fbx"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.armature_name
+msgid "Armature name"
+msgstr "骨架名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_x
+msgid "Bake <Location X> property to root bone"
+msgstr "烘焙<位置 X>属性到根骨骼"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_y
+msgid "Bake <Location Y> property to root bone"
+msgstr "烘焙<位置 Y>属性到根骨骼"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_z
+msgid "Bake <Location Z> property to root bone"
+msgstr "烘焙<位置 Z>属性到根骨骼"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.head_top_bone_name
+msgid "Head top"
+msgstr "头顶"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.head_top_bone_name
+msgid "Head top bone name"
+msgstr "头顶骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_root
+msgid "Add root bone"
+msgstr "添加根骨骼"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_root
+msgid "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root name' in 'Name Settings' for details"
+msgstr "添加根骨骼并作为父级；根位移将使用这根骨骼烘焙关键帧，详见“名称设置”->“根骨骼名”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_apply_transforms
+msgid "Apply transform"
+msgstr "应用变换"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_apply_transforms
+msgid "Apply the object's transform properties and fix animation intensity"
+msgstr "应用物体的变换属性，并修复动画强度"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_delete_armature
+msgid "Remove armature"
+msgstr "移除骨架"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_delete_armature
+msgid "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature name' in 'Name Settings' for details"
+msgstr "移除多余的骨架物体（通常被命名为 <Armature.00*>）。详见“名称设置”->“骨架名”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
+msgid "Remove prefix"
+msgstr "移除前缀"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
+msgid "Rename bones by removing the <mixamorig:> prefix from all bones. See 'Prefix' in 'Name Settings' for details"
+msgstr "重命名骨骼：从所有骨骼名称中国移除前缀<mixamorig:>， 详见“名称设置” -> “前缀名”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_rename_action
+msgid "Rename action"
+msgstr "重命名动作名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_rename_action
+msgid "Rename actions using the file name"
+msgstr "使用文件名来重命名动作名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_start_feet
+msgid "Root starts from feet"
+msgstr "Root 在脚下"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_start_feet
+msgid "Root bone initially positioned at the feet; used for cases where the armature is not at world center in initial state"
+msgstr "根骨骼初始位于脚下；用于修复骨架初始时不位于世界坐标中心的情况"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_suffix_format
+msgid "Suffix format"
+msgstr "后缀名格式"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_suffix_format
+msgid "Rename bones by replacing 'Left/Right' in bone names with '.L/.R' suffixes and converting other letters to lowercase"
+msgstr "重命名骨骼：用“.L/.R”的后缀来替代“.Left/.Right”，并将其余字母小写"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_foot_bone_name
+msgid "Left foot"
+msgstr "左脚"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_foot_bone_name
+msgid "Left foot bone name"
+msgstr "左脚骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_hand_bone_name
+msgid "Left hand"
+msgstr "左手"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_hand_bone_name
+msgid "Left hand bone name"
+msgstr "左手骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_toe_bone_name
+msgid "Left toe"
+msgstr "左脚趾"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_toe_bone_name
+msgid "Left toe bone name"
+msgstr "左脚趾骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.main_bone_name
+msgid "Main bone"
+msgstr "主要骨骼"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.main_bone_name
+msgid "Original root bone name, which contains animation data"
+msgstr "原本的根骨骼，它包含了运动数据"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method
+msgid "Calculation method for the height axis when baking keyframes; planar motion uses copy method"
+msgstr "烘焙关键帧时高度轴的计算方式；平面运动会使用复制的方式"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'COPY_DATA'
+msgid "Copy position keyframes of the main bone in world coordinates. See 'Main bone' in 'Name Settings' for details"
+msgstr "复制主要骨骼的位置属性关键帧，世界坐标轴。详见“名称设置”->“主要骨骼”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'LOWEST_BONE'
+msgid "Get the height of the lowest bone from six key bones as height axis data. See 'Name Settings' for details"
+msgstr "从六个关键骨骼中获取最低的骨骼作为高度轴数据。详见“名称设置”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'BOUND_BOX'
+msgid "Bound box"
+msgstr "边界盒"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'BOUND_BOX'
+msgid "Get the height of the bottom of the bounding box"
+msgstr "获取边界盒底部的高度"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.prefix_name
+msgid "Prefix name"
+msgstr "前缀名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_foot_bone_name
+msgid "Right foot"
+msgstr "右脚"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_foot_bone_name
+msgid "Right foot bone name"
+msgstr "右脚骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_hand_bone_name
+msgid "Right hand"
+msgstr "右手"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_hand_bone_name
+msgid "Right hand bone name"
+msgstr "右手骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_toe_bone_name
+msgid "Right toe"
+msgstr "右脚趾"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_toe_bone_name
+msgid "Right toe bone name"
+msgstr "右脚趾骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.root_name
+msgid "Root name"
+msgstr "根骨骼名"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.spine_bone_name
+msgid "Spine"
+msgstr "脊椎"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.spine_bone_name
+msgid "Spine bone name"
+msgstr "脊椎骨骼名"
+
+#: extensions/user_default/import_mixamo_root_motion/import_mixamo_root_motion.py:628
+msgctxt "Operator"
+msgid "Mixamo fbx(folder/*.fbx)"
+msgstr "Miamo fbx（文件夹/*.fbx）"
+
+#. :src: Add-on Import Mixamo - Root Motion info: name
+msgid "Import Mixamo - Root Motion"
+msgstr "导入 Mixamo - Root Motion"
+
+#. :src: Add-on Import Mixamo - Root Motion info: description
+msgid "Batch Import Fbx (Mixamo) And Apply Root Motion"
+msgstr "批量导入Fbx（Mixamo）并应用根位移"
+
+#~ msgid "Calculation method for the height axis when baking keyframes; planar motion uses the copy method"
+#~ msgstr "烘焙关键帧时高度轴的计算方式；平面运动会使用复制方式"
+
+#~ msgid "Root bone initially positioned at the feet; used for cases where the skeleton is not at world center in initial state"
+#~ msgstr "根骨骼初始位于脚下；用于修复骨架初始时不位于世界坐标中心的情况"
+
+#~ msgid "Original root bone name, which contains displacement data"
+#~ msgstr "原本的根骨骼，它包含了运动数据"
