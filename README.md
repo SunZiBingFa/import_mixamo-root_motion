@@ -27,12 +27,16 @@ Root Motion 将角色位移烘焙到`Root`骨骼并将它作为父级，烘焙�
 </details>
 
 ## 更新
-2024/07/01 从选中一个文件夹批量导入fbx文件，修改为多选fbx文件的方式导入
-2025/11/2 适配blendder 5.0，因FCurves的API改动
+- 从选中一个文件夹批量导入fbx文件，修改为多选fbx文件的方式导入
+- 增加选项：使用后缀格式（替换“Left/Right”为".L/.R"的后缀，并将其他字母小写）;
+- 增加面板：名称设置，可自定义骨骼名称；
+- 增加选项：让初始状态时根骨骼位于脚下；
+- 增加中文支持；
+
 
 ## 使用方法
-1. 安装Blender 4.2.0 ~ Blender 5.0.0 版本。
-2. 下载并安装该插件。(目前已上传至Blender官方拓展，可于Preferences[首选项]->Get Extensions[获取拓展]，中搜索"Import Mixamo - Root Motion"以获取)
+1. 安装Blender 4.2.0以上的版本。
+2. Blender官方拓展库中获取，Preferences[首选项]->Get Extensions[获取拓展]，中搜索"Import Mixamo - Root Motion")
 3. 打开Blender，选择“文件”>“导入”>“Mixamo Fbx(floder/*.fbx)”。
 4. 在打开的对话框中，选择动画文件的文件夹，右侧面板进行设置，点击导入“Import Mixamo *.Fbx”。
 
@@ -45,12 +49,6 @@ Root Motion 将角色位移烘焙到`Root`骨骼并将它作为父级，烘焙�
 ![005](./img/005.gif)
 ![006](./img/006.gif)
 ![007](./img/007.gif)
-
-## TODO LIST
-- [ ] 增加：自定义名称设置（Root、Hips_bone...）
-- [ ] 增加：导入时添加替换"Left" / “Right"为".L" / ".R"的可勾选按钮。
-- [ ] 增加：导入时计算原点的选项（世界坐标系中心｜双脚中心｜边界盒底面中心），“双脚中心｜边界盒底面中心”这两种情况用以适配初始模型不在世界坐标系中心的情况。
-
 
 <font color=gray>搞掂！</font>
 <font color=gray>坐翻低、饮啖茶、吃个包 🍵🫖🍞</font>
