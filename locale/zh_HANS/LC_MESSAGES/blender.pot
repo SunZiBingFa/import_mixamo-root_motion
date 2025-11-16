@@ -1,0 +1,238 @@
+
+msgid ""
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
+msgid " Batch import "
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
+msgctxt "Operator"
+msgid "Import Mixamo *.Fbx"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.armature_name
+msgid "Armature name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_x
+msgid "Bake <Location X> property to root bone"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_y
+msgid "Bake <Location Y> property to root bone"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.bake_z
+msgid "Bake <Location Z> property to root bone"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.head_top_bone_name
+msgid "Head top"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.head_top_bone_name
+msgid "Head top bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_root
+msgid "Add root bone"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_root
+msgid "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root' in 'Name Settings' for details"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_rotation_constraint
+msgid "Add Copy Rotation constraint to root bone and disable inherit rotation on hips"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_apply_transforms
+msgid "Apply transform"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_apply_transforms
+msgid "Apply the object's transform properties and fix animation intensity"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_delete_armature
+msgid "Remove armature"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_delete_armature
+msgid "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature' in 'Name Settings' for details"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
+msgid "Remove prefix"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
+msgid "Rename bones by removing the <mixamorig:> prefix from all bones. See 'Prefix' in 'Name Settings' for details"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_rename_action
+msgid "Rename action"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_rename_action
+msgid "Rename actions using the file name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_start_feet
+msgid "Root starts from feet"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_start_feet
+msgid "Root bone initially positioned at the feet; used for cases where the armature is not at world center in initial state"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_suffix_format
+msgid "Suffix format"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_suffix_format
+msgid "Rename bones by replacing 'Left/Right' in bone names with '.L/.R' suffixes and converting other letters to lowercase"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_foot_bone_name
+msgid "Left foot"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_foot_bone_name
+msgid "Left foot bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_hand_bone_name
+msgid "Left hand"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_hand_bone_name
+msgid "Left hand bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_toe_bone_name
+msgid "Left toe"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.left_toe_bone_name
+msgid "Left toe bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.main_bone_name
+msgid "Main bone"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.main_bone_name
+msgid "Original root bone name, which contains animation data"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method
+msgid "Calculation method for the height axis when baking keyframes; planar motion uses copy method"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'COPY_DATA'
+msgid "Copy position keyframes of the main bone in world coordinates. See 'Main bone' in 'Name Settings' for details"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'LOWEST_BONE'
+msgid "Get the height of the lowest bone from six key bones as height axis data. See 'Name Settings' for details"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'BOUND_BOX'
+msgid "Bound box"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.method:'BOUND_BOX'
+msgid "Get the height of the bottom of the bounding box"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.prefix_name
+msgid "Prefix name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_foot_bone_name
+msgid "Right foot"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_foot_bone_name
+msgid "Right foot bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_hand_bone_name
+msgid "Right hand"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_hand_bone_name
+msgid "Right hand bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_toe_bone_name
+msgid "Right toe"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.right_toe_bone_name
+msgid "Right toe bone name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.root_name
+msgid "Root name"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.spine_bone_name
+msgid "Spine"
+msgstr ""
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.spine_bone_name
+msgid "Spine bone name"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty
+msgid "Collection Definition"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty
+msgid "RNA collection property to define lists, arrays and mappings"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty.fixed_type
+msgid "Pointer Type"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty.fixed_type
+msgid "Fixed pointer type, empty if variable type"
+msgstr ""
+
+#. :src: bpy.types.StringProperty
+msgid "String Definition"
+msgstr ""
+
+#. :src: bpy.types.StringProperty
+msgid "RNA text string property definition"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.default
+msgid "String default value"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.length_max
+msgid "Maximum Length"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.length_max
+msgid "Maximum length of the string, 0 means unlimited"
+msgstr ""
+
+#: extensions/user_default/import_mixamo_root_motion/import_mixamo_root_motion.py:674
+msgctxt "Operator"
+msgid "Mixamo fbx(folder/*.fbx)"
+msgstr ""
+
+#: Add-on Import Mixamo - Root Motion info: name
+msgid "Import Mixamo - Root Motion"
+msgstr ""
+
+#: Add-on Import Mixamo - Root Motion info: description
+msgid "Batch Import Fbx (Mixamo) And Apply Root Motion"
+msgstr ""
+

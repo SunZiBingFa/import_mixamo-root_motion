@@ -23,5 +23,3 @@ Thank you to all contributors who have helped improve this project!
 * **Bouscout**：提出骨骼重命名功能建议，建议采用 Blender 标准的任务骨骼名称后缀格式，提升命名规范性。
 
 * **spinalcord**：提出 "Root Bone Rotation Support" 功能建议，并提供核心代码实现，优化了根骨骼旋转功能。
-
-> （注：文档由 AI 生成）

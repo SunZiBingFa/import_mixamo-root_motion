@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: Import Mixamo - Root Motion 1.0.3 (0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-15 02:30+0800\n"
-"PO-Revision-Date: 2025-11-15 13:57+0800\n"
+"PO-Revision-Date: 2025-11-16 21:32+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -15,7 +15,7 @@ msgstr ""
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
 msgid " Batch import "
-msgstr "批量导入"
+msgstr " 批量导入 "
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion
 msgctxt "Operator"
@@ -51,8 +51,12 @@ msgid "Add root bone"
 msgstr "添加根骨骼"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_root
-msgid "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root name' in 'Name Settings' for details"
-msgstr "添加根骨骼并作为父级；根位移将使用这根骨骼烘焙关键帧，详见“名称设置”->“根骨骼名”"
+msgid "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root' in 'Name Settings' for details"
+msgstr "添加根骨骼并作为父级；根位移将使用这根骨骼烘焙关键帧，详见“名称设置”->“根”"
+
+#. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_add_rotation_constraint
+msgid "Add Copy Rotation constraint to root bone and disable inherit rotation on hips"
+msgstr "给根骨骼添加 “复制旋转约束”，并在臀部骨骼上禁用 “继承旋转”"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_apply_transforms
 msgid "Apply transform"
@@ -67,8 +71,8 @@ msgid "Remove armature"
 msgstr "移除骨架"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_delete_armature
-msgid "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature name' in 'Name Settings' for details"
-msgstr "移除多余的骨架物体（通常被命名为 <Armature.00*>）。详见“名称设置”->“骨架名”"
+msgid "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature' in 'Name Settings' for details"
+msgstr "移除多余的骨架物体（通常被命名为 <Armature.00*>）。详见“名称设置”->“骨架”"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
 msgid "Remove prefix"
@@ -76,7 +80,7 @@ msgstr "移除前缀"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_remove_prefix
 msgid "Rename bones by removing the <mixamorig:> prefix from all bones. See 'Prefix' in 'Name Settings' for details"
-msgstr "重命名骨骼：从所有骨骼名称中国移除前缀<mixamorig:>， 详见“名称设置” -> “前缀名”"
+msgstr "重命名骨骼：从所有骨骼名称中国移除前缀<mixamorig:>， 详见“名称设置” -> “前缀”"
 
 #. :src: bpy.types.IMPORT_MIXAMO_OT_root_motion.is_rename_action
 msgid "Rename action"
@@ -194,7 +198,43 @@ msgstr "脊椎"
 msgid "Spine bone name"
 msgstr "脊椎骨骼名"
 
-#: extensions/user_default/import_mixamo_root_motion/import_mixamo_root_motion.py:628
+#. :src: bpy.types.CollectionProperty
+msgid "Collection Definition"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty
+msgid "RNA collection property to define lists, arrays and mappings"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty.fixed_type
+msgid "Pointer Type"
+msgstr ""
+
+#. :src: bpy.types.CollectionProperty.fixed_type
+msgid "Fixed pointer type, empty if variable type"
+msgstr ""
+
+#. :src: bpy.types.StringProperty
+msgid "String Definition"
+msgstr ""
+
+#. :src: bpy.types.StringProperty
+msgid "RNA text string property definition"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.default
+msgid "String default value"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.length_max
+msgid "Maximum Length"
+msgstr ""
+
+#. :src: bpy.types.StringProperty.length_max
+msgid "Maximum length of the string, 0 means unlimited"
+msgstr ""
+
+#: extensions/user_default/import_mixamo_root_motion/import_mixamo_root_motion.py:674
 msgctxt "Operator"
 msgid "Mixamo fbx(folder/*.fbx)"
 msgstr "Miamo fbx（文件夹/*.fbx）"
@@ -207,11 +247,17 @@ msgstr "导入 Mixamo - Root Motion"
 msgid "Batch Import Fbx (Mixamo) And Apply Root Motion"
 msgstr "批量导入Fbx（Mixamo）并应用根位移"
 
-#~ msgid "Calculation method for the height axis when baking keyframes; planar motion uses the copy method"
-#~ msgstr "烘焙关键帧时高度轴的计算方式；平面运动会使用复制方式"
+#~ msgid "Original root bone name, which contains displacement data"
+#~ msgstr "原本的根骨骼，它包含了运动数据"
 
 #~ msgid "Root bone initially positioned at the feet; used for cases where the skeleton is not at world center in initial state"
 #~ msgstr "根骨骼初始位于脚下；用于修复骨架初始时不位于世界坐标中心的情况"
 
-#~ msgid "Original root bone name, which contains displacement data"
-#~ msgstr "原本的根骨骼，它包含了运动数据"
+#~ msgid "Add root bone and set as parent; Root Motion will bake keyframes using this bone. See 'Root name' in 'Name Settings' for details"
+#~ msgstr "添加根骨骼并作为父级；根位移将使用这根骨骼烘焙关键帧，详见“名称设置”->“根骨骼名”"
+
+#~ msgid "Calculation method for the height axis when baking keyframes; planar motion uses the copy method"
+#~ msgstr "烘焙关键帧时高度轴的计算方式；平面运动会使用复制方式"
+
+#~ msgid "Remove redundant armature objects (usually named <Armature.00*>). See 'Armature name' in 'Name Settings' for details"
+#~ msgstr "移除多余的骨架物体（通常被命名为 <Armature.00*>）。详见“名称设置”->“骨架名”"

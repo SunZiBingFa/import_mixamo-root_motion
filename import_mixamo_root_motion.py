@@ -129,7 +129,7 @@ class BakeMethod():
         return self.obj.matrix_world @ self.obj.pose.bones[bone_name].head
     
     def get_start_point(self):
-        """ get first point 待完成... """
+        """ Obtain the planar position property of the first keyframe """
         bpy.context.scene.frame_set(1)
         left_foot = self.get_location_in_world(bone_name=self.left_foot_bone_name)
         right_foot = self.get_location_in_world(bone_name=self.right_foot_bone_name)
@@ -239,7 +239,37 @@ class RootMotion():
         self.frames = []  ## -> [ whole_frame=float_value ]
         for kf in self.curve_x.keyframe_points:
             self.frames.append(kf.co.x)
-    
+
+    def add_rotation_constraint(self, root_name:str, main_bone_name:str):
+        """ add copy rotation constraint to root bone and disable inherit rotation on hips """
+        # Select root bone
+        bpy.ops.object.mode_set(mode='POSE', toggle=False)
+        bpy.ops.pose.select_all(action='DESELECT')
+        root_bone = self.obj.pose.bones[root_name]
+        root_bone.bone.select = True
+        self.obj.data.bones.active = root_bone.bone
+        
+        # Add Copy Rotation constraint
+        constraint = root_bone.constraints.new('COPY_ROTATION')
+        constraint.target = self.obj
+        constraint.subtarget = main_bone_name
+        constraint.use_x = False
+        constraint.use_y = False
+        constraint.use_z = True
+        constraint.invert_x = False
+        constraint.invert_y = False
+        constraint.invert_z = False
+        constraint.mix_mode = 'REPLACE'
+        constraint.target_space = 'WORLD'
+        constraint.owner_space = 'WORLD'
+        
+        # Disable inherit rotation on hips
+        hips_bone = self.obj.pose.bones[main_bone_name]
+        hips_bone.bone.use_inherit_rotation = False
+        
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        return {'FINISHED'}
+
     def add_root(self, root_name:str):
         """ add root bone"""
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
@@ -280,9 +310,9 @@ class RootMotion():
 
 def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bool, is_remove_prefix: bool, 
         is_suffix_format: bool,is_delete_armature: bool, is_add_root: bool, method: str, is_start_feet: bool,
-        bake_x: bool, bake_y: bool, bake_z: bool, armature_name: str, root_name: str, prefix_name: str,
-        main_bone_name: str, head_top_bone_name: str, spine_bone_name: str, left_hand_bone_name: str,
-        right_hand_bone_name: str, left_foot_bone_name: str, right_foot_bone_name: str, 
+        bake_x: bool, bake_y: bool, bake_z: bool, is_add_rotation_constraint: bool, armature_name: str, 
+        root_name: str, prefix_name: str,main_bone_name: str, head_top_bone_name: str, spine_bone_name: str, 
+        left_hand_bone_name: str,right_hand_bone_name: str, left_foot_bone_name: str, right_foot_bone_name: str, 
         left_toe_bone_name: str,right_toe_bone_name: str,
         ):
     """ main - batch """
@@ -314,32 +344,40 @@ def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bo
                                 right_toe_bone_name=right_toe_bone_name)
         root_motion = RootMotion(obj, main_bone_name=main_bone_name)
 
-        ## apply transform and fix animation
+        # apply transform and fix animation
         if is_apply_transform:
             importer.scale_bone_action_intensity()
             importer.apply_all_transform()
-        ## get vectors for bone
+        # get vectors for bone
         if is_add_root and (bake_x, bake_y, bake_z):
             root_vectors, hips_vectors = bake_method.run()
-        ## add root bone
+        # add root bone
         if is_add_root:
             root_motion.add_root(root_name=root_name)
-        # ## bake root motion keyframes
+        # bake root motion keyframes
         if is_add_root and (bake_x, bake_y, bake_z):
             root_motion.bake_keyframes(bone_name=root_name, vectors=root_vectors)
             root_motion.edit_keyframes(bone_name=main_bone_name, vectors=hips_vectors)
-        # ## set parent
+        # set parent
         if is_add_root:
             importer.set_parent(child_bone=main_bone_name, parent_bone=root_name)
-        # ## rename action
+        # rename action
         if is_rename_action:
             importer.rename_action(file_path=file_path)
-        # ## remove prefix
+        # remove prefix
         if is_remove_prefix:
             importer.remove_prefix_name(prefix_name=prefix_name)
         if is_suffix_format:
             importer.suffix_format()
-        # ## delete armature
+        # add rotation constraint
+        if is_add_root and is_add_rotation_constraint:
+            # Get the renamed bone names
+            renamed_root = root_name if not is_remove_prefix else root_name
+            renamed_main_bone = main_bone_name.replace(prefix_name, "") if is_remove_prefix else main_bone_name
+            if is_suffix_format:
+                renamed_main_bone = renamed_main_bone.lower()
+            root_motion.add_rotation_constraint(root_name=renamed_root, main_bone_name=renamed_main_bone)
+        # delete armature
         if is_delete_armature:
             importer.delete_armature(armature_name=armature_name)
         context.scene.frame_set(1)  ## set frame to 1
@@ -424,6 +462,12 @@ class BatchImport(Operator, ImportHelper):
     is_start_feet: BoolProperty(
         name = "Root starts from feet",
         description = "Root bone initially positioned at the feet; used for cases where the armature is not at world center in initial state",
+        default = False,
+    ) # type: ignore
+
+    is_add_rotation_constraint: BoolProperty(
+        name = "Rotation",
+        description = "Add Copy Rotation constraint to root bone and disable inherit rotation on hips",
         default = False,
     ) # type: ignore
 
@@ -527,6 +571,7 @@ class BatchImport(Operator, ImportHelper):
                 is_delete_armature=self.is_delete_armature, 
                 is_add_root=self.is_add_root, method=self.method, is_start_feet=self.is_start_feet,
                 bake_x=self.bake_x, bake_y=self.bake_y, bake_z=self.bake_z,
+                is_add_rotation_constraint=self.is_add_rotation_constraint,
                 armature_name=self.armature_name, root_name=self.root_name, prefix_name=self.prefix_name,
                 main_bone_name=self.main_bone_name, head_top_bone_name=self.head_top_bone_name,
                 spine_bone_name=self.spine_bone_name, left_hand_bone_name=self.left_hand_bone_name,
@@ -584,6 +629,7 @@ class IMPORT_PT_bake_settings(Panel):
 
         layout.prop(operator, 'method')
         layout.prop(operator, 'is_start_feet', icon='ACTION')
+        layout.prop(operator, 'is_add_rotation_constraint', icon='CON_ROTLIKE')
 
         row = layout.row(align=True)
         row.prop(operator, 'bake_x', icon='KEYFRAME_HLT')
