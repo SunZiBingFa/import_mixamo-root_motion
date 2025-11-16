@@ -50,5 +50,9 @@ Root Motion 将角色位移烘焙到`Root`骨骼并将它作为父级，烘焙�
 ![006](./img/006.gif)
 ![007](./img/007.gif)
 
+## 贡献者 Contributors
+感谢所有为项目做出贡献的人！<br />
+[查看所有贡献者](./CONTRIBUTORS.md)
+
 <font color=gray>搞掂！</font>
 <font color=gray>坐翻低、饮啖茶、吃个包 🍵🫖🍞</font>
