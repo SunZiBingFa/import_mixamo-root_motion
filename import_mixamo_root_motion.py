@@ -2,7 +2,7 @@ import bpy
 import os
 
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty, CollectionProperty
+from bpy.props import IntProperty, StringProperty, BoolProperty, EnumProperty, CollectionProperty
 from bpy.types import Operator, Panel, Object, Action
 from bpy.utils import escape_identifier
 from mathutils import Vector
@@ -313,7 +313,7 @@ def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bo
         bake_x: bool, bake_y: bool, bake_z: bool, is_add_rotation_constraint: bool, armature_name: str, 
         root_name: str, prefix_name: str,main_bone_name: str, head_top_bone_name: str, spine_bone_name: str, 
         left_hand_bone_name: str,right_hand_bone_name: str, left_foot_bone_name: str, right_foot_bone_name: str, 
-        left_toe_bone_name: str,right_toe_bone_name: str,
+        left_toe_bone_name: str,right_toe_bone_name: str, anim_offset: int,
         ):
     """ main - batch """
     ## Parameters
@@ -331,7 +331,7 @@ def main(context, file_path: str, is_apply_transform: bool, is_rename_action: bo
     right_toe_bone_name = escape_identifier(right_toe_bone_name)
 
     try:
-        bpy.ops.import_scene.fbx(filepath=file_path)  ## import fbx file
+        bpy.ops.import_scene.fbx(filepath=file_path, anim_offset=anim_offset)  ## import fbx file
 
         obj = context.object
         ## class instance
@@ -562,6 +562,14 @@ class BatchImport(Operator, ImportHelper):
         default = "mixamorig:Spine",
     ) # type: ignore
 
+    anim_offset: IntProperty(
+        name = "Anim offset",
+        description = "FBX Anim offset",
+        default = 1,
+        min = -100,
+        max = 100,
+    ) # type: ignore
+
     def execute(self, context):
         for file in self.files:
             file_path = os.path.join(self.directory, file.name)
@@ -577,7 +585,7 @@ class BatchImport(Operator, ImportHelper):
                 spine_bone_name=self.spine_bone_name, left_hand_bone_name=self.left_hand_bone_name,
                 right_hand_bone_name=self.right_hand_bone_name, left_foot_bone_name=self.left_foot_bone_name, 
                 right_foot_bone_name=self.right_foot_bone_name, left_toe_bone_name=self.left_toe_bone_name,
-                right_toe_bone_name=self.right_toe_bone_name,
+                right_toe_bone_name=self.right_toe_bone_name, anim_offset=self.anim_offset,
                 )
         return {'FINISHED'}
     
@@ -669,6 +677,26 @@ class IMPORT_PT_name_settings(Panel):
         column.prop(operator, 'left_toe_bone_name')
         column.prop(operator, 'right_toe_bone_name')
 
+## Panel: root motion settings
+class IMPORT_PT_fbx_settings(Panel):
+    bl_space_type = 'FILE_BROWSER'
+    bl_region_type = 'TOOL_PROPS'
+    bl_label = "FBX Settings"
+    
+    @classmethod
+    def poll(cls, context):
+        sfile = context.space_data
+        operator = sfile.active_operator
+        return operator.bl_idname == "IMPORT_MIXAMO_OT_root_motion"
+
+    def draw(self, context):
+        layout = self.layout
+        sfile = context.space_data
+        operator = sfile.active_operator
+
+        row = layout.row(align=True)
+        row.prop(operator, 'anim_offset', icon='KEYFRAME_HLT')
+
 
 def menu_func_import(self, context):
     self.layout.operator(BatchImport.bl_idname, text="Mixamo fbx(folder/*.fbx)")
@@ -679,10 +707,12 @@ def register():
     bpy.utils.register_class(IMPORT_PT_base_settings)
     bpy.utils.register_class(IMPORT_PT_bake_settings)
     bpy.utils.register_class(IMPORT_PT_name_settings)
+    bpy.utils.register_class(IMPORT_PT_fbx_settings)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.utils.unregister_class(IMPORT_PT_fbx_settings)
     bpy.utils.unregister_class(IMPORT_PT_name_settings)
     bpy.utils.unregister_class(IMPORT_PT_bake_settings)
     bpy.utils.unregister_class(IMPORT_PT_base_settings)
